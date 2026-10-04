@@ -40,7 +40,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -52,6 +52,7 @@ async def debug_endpoint(request: Request):
         "url_path": request.url.path,
         "scope_path": request.scope.get("path"),
         "method": request.method,
+        "query_params": dict(request.query_params),
         "headers": {k: v for k, v in request.headers.items() if "auth" not in k.lower() and "key" not in k.lower()}
     }
 
@@ -59,16 +60,18 @@ async def debug_endpoint(request: Request):
 @app.middleware("http")
 async def normalize_vercel_paths(request: Request, call_next):
     """Normalize paths that may be altered by Vercel serverless rewrites."""
-    path = request.scope.get("path", "")
-    # Check if original path is in headers
-    orig_path = request.headers.get("x-matched-path") or request.headers.get("x-invoke-path")
-    if orig_path and orig_path.startswith("/api/"):
-        request.scope["path"] = orig_path
-    elif path.startswith("/api/index.py/"):
-        request.scope["path"] = path[len("/api/index.py"):]
-    elif path == "/api/index.py":
-        pass
+    q_path = request.query_params.get("__path")
+    if q_path:
+        sub = q_path.lstrip("/")
+        request.scope["path"] = f"/api/{sub}"
+    else:
+        orig_path = request.headers.get("x-matched-path") or request.headers.get("x-invoke-path")
+        if orig_path and orig_path.startswith("/api/"):
+            request.scope["path"] = orig_path
+        elif request.scope.get("path", "").startswith("/api/index.py/"):
+            request.scope["path"] = request.scope["path"][len("/api/index.py"):]
     return await call_next(request)
+
 
 
 # Include API routes for both /api/v1 and /v1 (covers direct and rewritten Vercel requests)
