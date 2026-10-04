@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blind Spot - AI Thinking Companion</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Skip to content link -->
+        <a href="#main-content" class="skip-link">Skip to content</a>
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">Blind Spot</h1>
+                <p class="app-tagline">See what you're not seeing. Decide on your own terms.</p>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main id="main-content">
+            <!-- Landing/Hero Section -->
+            <section class="landing-section" id="landing-section">
+                <div class="landing-content">
+                    <h2 class="section-title">Help me think through a decision</h2>
+                    <p class="section-description">
+                        Describe what you're deciding, what you know, and why you're leaning a certain way.
+                        I'll help you notice what you might be overlooking.
+                    </p>
+
+                    <!-- Decision Form -->
+                    <form id="decision-form" class="decision-form" novalidate>
+                        <div class="form-group">
+                            <label for="decision-input" class="form-label">What decision are you considering? <span class="required">*</span></label>
+                            <textarea
+                                id="decision-input"
+                                class="form-input"
+                                rows="3"
+                                placeholder="e.g., Whether to accept a 6-month internship offer"
+                                maxlength="500"
+                                required
+                                aria-describedby="decision-help"
+                            ></textarea>
+                            <div id="decision-help" class="form-help">Describe the decision you're trying to make</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="details-input" class="form-label">What details do you already have?</label>
+                            <textarea
+                                id="details-input"
+                                class="form-input"
+                                rows="4"
+                                placeholder="e.g., stipend amount, location, working hours, role, learning opportunities, college schedule"
+                                maxlength="2000"
+                                aria-describedby="details-help"
+                            ></textarea>
+                            <div id="details-help" class="form-help">Optional but helpful: what information do you already know?</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reasons-input" class="form-label">What are the main reasons you are leaning this way? <span class="required">*</span></label>
+                            <textarea
+                                id="reasons-input"
+                                class="form-input"
+                                rows="3"
+                                placeholder="e.g., the stipend is good, the company is close to home, it will provide industry experience"
+                                maxlength="1000"
+                                required
+                                aria-describedby="reasons-help"
+                            ></textarea>
+                            <div id="reasons-help" class="form-help">What's driving your initial lean?</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="decision-type-select" class="form-label">Decision type (optional)</label>
+                            <select id="decision-type-select" class="form-select">
+                                <option value="">Select a decision type</option>
+                                <option value="career">Career</option>
+                                <option value="education">Education</option>
+                                <option value="financial">Financial</option>
+                                <option value="startup">Startup</option>
+                                <option value="personal">Personal</option>
+                                <option value="relationship">Relationship</option>
+                                <option value="health">Health</option>
+                                <option value="purchase">Purchase</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="analyze-button">
+                                Analyze My Thinking
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="example-button">
+                                Try the internship example
+                            </button>
+                        </div>
+
+                        <div class="form-error" id="form-error" aria-live="polite"></div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Loading State -->
+            <section class="loading-section" id="loading-section" aria-hidden="true">
+                <div class="loading-content">
+                    <div class="loading-spinner"></div>
+                    <p class="loading-text">Analyzing your thinking...</p>
+                    <p class="loading-description">Identifying what you might be overlooking</p>
+                </div>
+            </section>
+
+            <!-- Results Dashboard -->
+            <section class="results-section" id="results-section" aria-hidden="true">
+                <!-- Persistent Banner -->
+                <div class="results-banner">
+                    <p class="banner-text">This tool asks questions. The decision stays yours.</p>
+                </div>
+
+                <div class="results-grid">
+                    <!-- Card: What you're focusing on -->
+                    <article class="result-card" id="focus-card">
+                        <div class="card-header">
+                            <h3 class="card-title">What you're focusing on</h3>
+                            <p class="card-description">The factors and reasons that are most visible in your thinking</p>
+                        </div>
+                        <div class="card-body" id="focus-content">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </article>
+
+                    <!-- Card: What might be missing -->
+                    <article class="result-card" id="missing-card">
+                        <div class="card-header">
+                            <h3 class="card-title">What might be missing</h3>
+                            <p class="card-description">Important considerations that may be absent from your current thinking</p>
+                        </div>
+                        <div class="card-body" id="missing-content">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </article>
+
+                    <!-- Card: Assumptions to examine -->
+                    <article class="result-card" id="assumptions-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Assumptions to examine</h3>
+                            <p class="card-description">Unstated beliefs behind your stated reasons</p>
+                        </div>
+                        <div class="card-body" id="assumptions-content">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </article>
+
+                    <!-- Card: Conflicts in reasoning -->
+                    <article class="result-card" id="conflicts-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Where your reasoning may pull against itself</h3>
+                            <p class="card-description">Tensions or contradictions within your own statements</p>
+                        </div>
+                        <div class="card-body" id="conflicts-content">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </article>
+
+                    <!-- Card: Questions to sit with -->
+                    <article class="result-card" id="questions-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Questions to sit with</h3>
+                            <p class="card-description">Open-ended questions to deepen your reflection</p>
+                        </div>
+                        <div class="card-body" id="questions-content">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </article>
+
+                    <!-- Card: Possible thinking traps -->
+                    <article class="result-card" id="biases-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Possible thinking traps</h3>
+                            <p class="card-description">Cognitive biases that may be influencing your thinking (tentative)</p>
+                        </div>
+                        <div class="card-body" id="biases-content">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Reflection Section -->
+                <section class="reflection-section" id="reflection-section" aria-hidden="true">
+                    <div class="reflection-header">
+                        <h2 class="section-title">Reflect on these questions</h2>
+                        <p class="section-description">
+                            Take your time to think about these questions. There are no right or wrong answers.
+                            Your responses will help refine the analysis in the next round.
+                        </p>
+                    </div>
+
+                    <form id="reflection-form" class="reflection-form" novalidate>
+                        <div id="questions-list" class="questions-list">
+                            <!-- Questions will be populated by JavaScript -->
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="reflect-button">
+                                Go deeper
+                            </button>
+                            <button type="button" class="btn btn-outline" id="skip-reflection-button">
+                                Skip to summary
+                            </button>
+                        </div>
+
+                        <div class="form-error" id="reflection-error" aria-live="polite"></div>
+                    </form>
+                </section>
+
+                <!-- Thinking Summary -->
+                <section class="summary-section" id="summary-section" aria-hidden="true">
+                    <div class="summary-header">
+                        <h2 class="section-title">My Thinking Summary</h2>
+                        <p class="section-description">
+                            Your personalized thinking summary captures your decision, reasoning process,
+                            insights gained, and open questions for further reflection.
+                        </p>
+                    </div>
+
+                    <div class="summary-content" id="summary-content">
+                        <!-- Summary content will be populated by JavaScript -->
+                    </div>
+
+                    <div class="summary-actions">
+                        <button class="btn btn-outline" id="copy-summary-button">
+                            Copy summary
+                        </button>
+                        <button class="btn btn-outline" id="download-summary-button">
+                            Download as .md
+                        </button>
+                        <button class="btn btn-primary" id="new-analysis-button">
+                            New analysis
+                        </button>
+                    </div>
+                </section>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p class="footer-text">
+                    AI can miss things too. Verify important facts.
+                </p>
+                <p class="footer-privacy">
+                    Privacy-conscious: No personal data is stored or shared.
+                    Analysis is temporary and session-based.
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/api.js"></script>
+    <script type="module" src="js/render.js"></script>
+    <script type="module" src="js/state.js"></script>
+    <script type="module" src="js/a11y.js"></script>
+</body>
+</html>

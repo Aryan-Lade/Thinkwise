@@ -1,0 +1,77 @@
+{
+  "decision": "Whether to accept a 6-month internship offer",
+  "details": "Good stipend, close to home, working hours 9-5, role in software development, learning opportunities include industry tools, college schedule has classes Monday-Thursday",
+  "reasons": "Mainly considering it because the stipend is good, the company is close to home, and it will provide industry experience",
+  "decision_type": "career",
+  "expected_analysis": {
+    "reasoning_map": {
+      "stated_factors": ["good stipend", "close to home", "software development role", "industry tools learning", "9-5 working hours", "college schedule Monday-Thursday"],
+      "stated_reasons": ["stipend is good", "company is close to home", "will provide industry experience"],
+      "most_visible_factors": ["stipend is good", "company is close to home", "industry experience"],
+      "thin_or_missing_areas": ["impact on academics", "actual learning quality", "mentorship opportunities", "long-term career fit", "workload balance", "opportunity cost"]
+    },
+    "overlooked_factors": [
+      {
+        "text": "Impact on academic performance and college schedule balance",
+        "why_it_matters": "The internship during academic term could affect grades, course comprehension, and ability to participate in campus activities"
+      },
+      {
+        "text": "Quality and accessibility of mentorship in the role",
+        "why_it_matters": "Industry experience varies greatly depending on mentorship quality - poor mentorship could limit learning despite the prestigious company name"
+      },
+      {
+        "text": "Long-term career alignment with personal goals",
+        "why_it_matters": "Software development experience may not align with evolving career interests, potentially creating a skills mismatch for future goals"
+      }
+    ],
+    "assumptions": [
+      {
+        "text": "Good stipend automatically means the opportunity is worthwhile",
+        "how_to_test": "Calculate actual hourly rate after taxes and compare to other opportunities; consider what the stipend doesn't cover (transportation, meals, etc.)"
+      },
+      {
+        "text": "Close to home means low cost and minimal inconvenience",
+        "how_to_test": "Map out actual commute time and costs; consider time value of that commute versus other uses"
+      },
+      {
+        "text": "Any industry experience is valuable regardless of specific role or tasks",
+        "how_to_test": "Research specific tasks and projects involved; talk to current or former interns about day-to-day work"
+      }
+    ],
+    "conflicts": [
+      {
+        "statement_a": "I want to gain valuable industry experience for my career",
+        "statement_b": "I'm choosing based primarily on stipend and proximity rather than learning opportunities",
+        "tension": "There's a potential mismatch between stated career goals and actual decision drivers"
+      },
+      {
+        "statement_a": "My college schedule and academic performance are important to me",
+        "statement_b": "I'm considering an internship that takes place during the academic term",
+        "tension": "The timing of the internship may conflict with academic priorities"
+      }
+    ],
+    "questions": [
+      {
+        "theme": "assumptions",
+        "text": "What specific evidence would convince you that the stipend truly represents good value for your time?"
+      },
+      {
+        "theme": "overlooked_factors",
+        "text": "How would you evaluate the actual quality of mentorship and learning opportunities available in this role?"
+      },
+      {
+        "theme": "conflicts",
+        "text": "If you had to choose between maximizing stipend and maximizing learning quality, which would you prioritize and why?"
+      },
+      {
+        "theme": "time_horizon",
+        "text": "How might your feelings about this decision change in 6 months, 1 year, or 5 years from now?"
+      },
+      {
+        "theme": "stakeholders",
+        "text": "Who else besides yourself might be affected by this decision, and what might their perspectives be?"
+      }
+    ],
+    "safety_flag": false
+  }
+}
