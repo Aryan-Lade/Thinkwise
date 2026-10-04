@@ -44,17 +44,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.api_route("/debug", methods=["GET", "POST"])
+@app.api_route("/api/debug", methods=["GET", "POST"])
+@app.api_route("/api/v1/debug", methods=["GET", "POST"])
+async def debug_endpoint(request: Request):
+    return {
+        "url_path": request.url.path,
+        "scope_path": request.scope.get("path"),
+        "method": request.method,
+        "headers": {k: v for k, v in request.headers.items() if "auth" not in k.lower() and "key" not in k.lower()}
+    }
+
 # Normalize Vercel paths middleware
 @app.middleware("http")
 async def normalize_vercel_paths(request: Request, call_next):
     """Normalize paths that may be altered by Vercel serverless rewrites."""
     path = request.scope.get("path", "")
-    for prefix in ["/api/index.py", "/index.py"]:
-        if path.startswith(prefix):
-            new_path = path[len(prefix):] or "/"
-            request.scope["path"] = new_path
-            break
+    # Check if original path is in headers
+    orig_path = request.headers.get("x-matched-path") or request.headers.get("x-invoke-path")
+    if orig_path and orig_path.startswith("/api/"):
+        request.scope["path"] = orig_path
+    elif path.startswith("/api/index.py/"):
+        request.scope["path"] = path[len("/api/index.py"):]
+    elif path == "/api/index.py":
+        pass
     return await call_next(request)
+
 
 # Include API routes for both /api/v1 and /v1 (covers direct and rewritten Vercel requests)
 for prefix in ["/api/v1", "/v1"]:
