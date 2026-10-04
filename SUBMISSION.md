@@ -1,6 +1,6 @@
 # Blind Spot: AI Thinking Companion
 
-**Live Demo URL:** [INSERT YOUR CLOUD RUN URL HERE]
+**Live Demo URL:** https://thinkwise-xi.vercel.app/
 
 **GitHub Repository:** https://github.com/Aryan-Lade/Thinkwise
 
