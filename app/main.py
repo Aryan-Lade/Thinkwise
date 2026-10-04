@@ -48,13 +48,18 @@ app.add_middleware(
 @app.api_route("/api/debug", methods=["GET", "POST"])
 @app.api_route("/api/v1/debug", methods=["GET", "POST"])
 async def debug_endpoint(request: Request):
+    key = settings.GEMINI_API_KEY or ""
     return {
         "url_path": request.url.path,
         "scope_path": request.scope.get("path"),
         "method": request.method,
         "query_params": dict(request.query_params),
-        "headers": {k: v for k, v in request.headers.items() if "auth" not in k.lower() and "key" not in k.lower()}
+        "gemini_key_configured": bool(key and key != "your_gemini_api_key_here"),
+        "gemini_key_prefix": key[:6] if key else "none",
+        "gemini_model": settings.GEMINI_MODEL,
+        "environment": settings.ENVIRONMENT,
     }
+
 
 
 

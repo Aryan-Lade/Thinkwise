@@ -174,8 +174,9 @@ async def analyze_decision(request: Request):
         logger.error(f"Unexpected error in analyze_decision: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
+            detail=f"Analysis error: {str(e)}"
         )
+
 
 
 # Add OPTIONS handler for CORS preflight
