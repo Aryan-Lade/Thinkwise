@@ -128,13 +128,13 @@ class AnalysisResponse(BaseModel):
     round: int = Field(default=1, description="Analysis round number")
     decision_restated: str = Field(description="User's decision restated for clarity")
     reasoning_map: ReasoningMap
-    overlooked_factors: List[OverlookedFactor]
-    assumptions: List[Assumption]
-    conflicts: List[Conflict]
-    stakeholders: List[Stakeholder]
-    alternatives_not_considered: List[Alternative]
-    possible_biases: List[Bias]
-    questions: List[Question]
+    overlooked_factors: List[OverlookedFactor] = Field(default_factory=list)
+    assumptions: List[Assumption] = Field(default_factory=list)
+    conflicts: List[Conflict] = Field(default_factory=list)
+    stakeholders: List[Stakeholder] = Field(default_factory=list)
+    alternatives_not_considered: List[Alternative] = Field(default_factory=list)
+    possible_biases: List[Bias] = Field(default_factory=list)
+    questions: List[Question] = Field(default_factory=list)
     what_would_change_your_mind: Optional[str] = Field(
         default=None,
         description="What information would change the user's mind"
@@ -165,10 +165,10 @@ class RefineResponse(BaseModel):
     round: int = Field(description="Analysis round number")
     decision_restated: str
     reasoning_map: ReasoningMap
-    overlooked_factors: List[OverlookedFactor]
-    assumptions: List[Assumption]
-    conflicts: List[Conflict]
-    questions: List[Question]
+    overlooked_factors: List[OverlookedFactor] = Field(default_factory=list)
+    assumptions: List[Assumption] = Field(default_factory=list)
+    conflicts: List[Conflict] = Field(default_factory=list)
+    questions: List[Question] = Field(default_factory=list)
     what_changed: str = Field(
         description="How the user's answers changed the analysis"
     )

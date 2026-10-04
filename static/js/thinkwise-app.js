@@ -3,7 +3,7 @@
    Vanilla JS, no dependencies.
 ══════════════════════════════════════════════════ */
 
-const API = '/api/v1';
+const API = '/v1';
 
 /* ── State ── */
 const S = { decision:'', details:'', reasons:'', type:'', analysis:null, sessionId:null, questions:[] };
