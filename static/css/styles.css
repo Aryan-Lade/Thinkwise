@@ -343,7 +343,7 @@ a:hover {
 
 .results-banner {
     background-color: var(--bg-tertiary);
-    color: var-text-secondary;
+    color: var(--text-secondary);
     text-align: center;
     padding: var(--spacing-sm);
     font-size: var(--font-size-md);
