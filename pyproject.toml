@@ -38,7 +38,7 @@ target-version = "py312"
 line-length = 88
 target-version = ["py312"]
 include = '\.py$'
-extend-exclude = """
+extend-exclude = '''
 /(
   \.git
   | \.hg
@@ -51,7 +51,7 @@ extend-exclude = """
   | build
   | dist
 )/
-"""
+'''
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
