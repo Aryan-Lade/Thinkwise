@@ -17,8 +17,10 @@ async def app(scope, receive, send):
         if "__path" in qs and qs["__path"]:
             sub = qs["__path"][0].lstrip("/")
             scope["path"] = f"/api/{sub}"
-        elif scope.get("path", "").startswith("/api/index.py/"):
-            scope["path"] = scope["path"][len("/api/index.py"):]
+        elif scope.get("path", "").startswith("/api/index.py"):
+            scope["path"] = scope["path"][len("/api/index.py"):] or "/"
+
+
 
     await fastapi_app(scope, receive, send)
 

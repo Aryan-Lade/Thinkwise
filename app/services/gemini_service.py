@@ -30,14 +30,13 @@ class GeminiService:
         self.temperature = settings.GEMINI_TEMPERATURE
         self.max_retries = settings.GEMINI_MAX_RETRIES
 
-        # Configure generation settings with schemas for structured outputs
+        # Configure generation settings for structured JSON output
         self.analysis_config = types.GenerateContentConfig(
             temperature=self.temperature,
             max_output_tokens=constants.GEMINI_MAX_OUTPUT_TOKENS,
             top_p=constants.GEMINI_TOP_P,
             top_k=constants.GEMINI_TOP_K,
             response_mime_type="application/json",
-            response_schema=AnalysisResponse,
         )
 
         self.refine_config = types.GenerateContentConfig(
@@ -46,8 +45,8 @@ class GeminiService:
             top_p=constants.GEMINI_TOP_P,
             top_k=constants.GEMINI_TOP_K,
             response_mime_type="application/json",
-            response_schema=RefineResponse,
         )
+
 
     def _get_candidate_models(self) -> List[str]:
         """Return list of candidate models with fallbacks."""
