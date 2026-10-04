@@ -21,15 +21,17 @@ logger = logging.getLogger(__name__)
 # Get settings
 settings = get_settings()
 
-# Static directory
-STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+# Static directory (prefer public/ for Vercel and static/ for local)
+STATIC_DIR = Path(__file__).resolve().parent.parent / "public"
+if not STATIC_DIR.exists():
+    STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 
 # Create FastAPI app
 app = FastAPI(
     title="Blind Spot AI Thinking Companion",
     description="AI-powered tool to help users identify blind spots in their reasoning",
     version="1.0.0",
-    docs_url="/docs" if settings.ENVIRONMENT == "development" else None,
+    docs_url="/docs",
     redoc_url=None,
 )
 
@@ -48,11 +50,10 @@ app.include_router(analyze.router, prefix="/api/v1", tags=["analyze"])
 app.include_router(refine.router, prefix="/api/v1", tags=["refine"])
 app.include_router(summary.router, prefix="/api/v1", tags=["summary"])
 
-# Mount static assets (JS/CSS bundles from DealMind build)
+# Mount static assets if directories exist
 if (STATIC_DIR / "assets").exists():
     app.mount("/assets", StaticFiles(directory=str(STATIC_DIR / "assets")), name="assets")
 
-# Mount Thinkwise CSS and JS directories
 if (STATIC_DIR / "css").exists():
     app.mount("/css", StaticFiles(directory=str(STATIC_DIR / "css")), name="css")
 
@@ -62,20 +63,30 @@ if (STATIC_DIR / "js").exists():
 # Serve specific static files directly
 @app.get("/favicon.svg")
 async def favicon():
-    return FileResponse(str(STATIC_DIR / "favicon.svg"))
+    fav = STATIC_DIR / "favicon.svg"
+    if fav.exists():
+        return FileResponse(str(fav), media_type="image/svg+xml")
+    return {"error": "favicon not found"}
 
 @app.get("/icons.svg")
 async def icons():
-    return FileResponse(str(STATIC_DIR / "icons.svg"))
+    ico = STATIC_DIR / "icons.svg"
+    if ico.exists():
+        return FileResponse(str(ico), media_type="image/svg+xml")
+    return {"error": "icons not found"}
 
-# Catch-all: serve index.html for all non-API routes (React Router SPA)
+# Catch-all: serve exact file if it exists, otherwise serve index.html
 @app.get("/{full_path:path}")
 async def serve_spa(full_path: str, request: Request):
-    """Serve the React SPA for all non-API, non-asset routes."""
+    """Serve static file or fallback to index.html."""
+    target_file = STATIC_DIR / full_path
+    if target_file.is_file():
+        return FileResponse(str(target_file))
     index_path = STATIC_DIR / "index.html"
     if index_path.exists():
         return FileResponse(str(index_path))
     return {"error": "Frontend not found"}
+
 
 @app.on_event("startup")
 async def startup_event():

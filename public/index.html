@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thinkwise - AI Decision Companion</title>
+  <meta name="description" content="Thinkwise - See what you are not seeing. AI-powered blind spot analysis for clearer, confident decisions." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/thinkwise.css" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
+      });
+    }
+  </script>
+</head>
+<body>
+  <a href="#app-section" class="skip-link" style="position:absolute;top:-40px;left:0;background:#fff;color:#0A0A0E;padding:8px 12px;border-radius:6px;z-index:9999;transition:top 0.2s" onfocus="this.style.top='8px'" onblur="this.style.top='-40px'">Skip to app</a>
+
+  <!-- HEADER -->
+  <header class="tw-header" aria-label="Site navigation">
+    <div class="tw-header-inner">
+      <a href="#" class="tw-logo">
+        <span class="tw-logo-symbol">&#x1F9E0;</span>
+        <span>Thinkwise</span>
+        <span class="tw-version">v1.0</span>
+      </a>
+      <nav class="tw-nav" aria-label="Main">
+        <a href="#capabilities">Capabilities</a>
+        <a href="#how-it-works">How it Works</a>
+        <a href="#app-section">Try It</a>
+      </nav>
+      <div class="tw-header-actions">
+        <a href="#app-section" class="btn btn-dark btn-sm">Start Analysis <span class="btn-arrow">&#8594;</span></a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="tw-hero">
+      <div class="tw-container">
+        <div class="status-capsule" style="margin-bottom:28px;display:inline-flex">
+          <span class="status-dot"></span>
+          <span>AI Analysis Engine Active &mdash; Gemini Connected</span>
+        </div>
+        <h1 class="tw-hero-title">
+          See What You&#39;re
+          <span class="inline-badge badge-brain">&#x1F9E0;</span>
+          <br>Not Seeing,
+          <span class="inline-badge badge-eye">&#x1F441;&#xFE0F;</span>
+          <span class="ghost-text"> Decide Clearly</span>
+        </h1>
+        <p class="tw-hero-sub">
+          Describe your decision, what you know, and why you&#39;re leaning a certain way.
+          Thinkwise maps your blind spots, examines your assumptions, and surfaces what you might be overlooking.
+        </p>
+        <div class="tw-hero-cta">
+          <a href="#app-section" class="btn btn-dark btn-lg">Analyze My Thinking <span class="btn-arrow">&#8594;</span></a>
+          <a href="#how-it-works" class="btn btn-outline btn-lg">Explore the Process</a>
+        </div>
+        <div class="tw-social-proof">
+          <div class="avatar-stack">
+            <span class="avatar-chip" style="background:#7C3AED">AK</span>
+            <span class="avatar-chip" style="background:#10B981">RJ</span>
+            <span class="avatar-chip" style="background:#3B82F6">SM</span>
+            <span class="avatar-chip" style="background:#F59E0B">PL</span>
+            <span class="avatar-chip" style="background:#EF4444">TC</span>
+          </div>
+          <p class="social-proof-text"><strong>Trusted by 1,200+ decision-makers</strong> across careers, startups, and life choices</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- MARQUEE -->
+    <div class="tw-marquee" aria-hidden="true">
+      <div class="tw-marquee-track">
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Career Decisions</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Financial Choices</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Startup Strategy</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Relationship Clarity</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Education Paths</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Health Decisions</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Major Purchases</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Life Pivots</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Career Decisions</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Financial Choices</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Startup Strategy</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Relationship Clarity</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Education Paths</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Health Decisions</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Major Purchases</span></div>
+        <div class="marquee-item"><span class="marquee-dot">&#9670;</span><span>Life Pivots</span></div>
+      </div>
+    </div>
+
+    <!-- SHOWCASE -->
+    <section class="tw-showcase">
+      <div class="tw-container">
+        <div class="showcase-viewport">
+          <div class="showcase-float-badge"><span>&#10022;</span><span>Live Analysis Preview</span></div>
+          <div class="showcase-mockup">
+            <div class="mockup-header">
+              <div class="mockup-dots"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span></div>
+              <div class="mockup-title">Career Pivot Decision &mdash; Blind Spot Analysis</div>
+              <div class="mockup-tag">Active Session</div>
+            </div>
+            <div class="mockup-grid">
+              <div class="metric-card"><span class="metric-lbl">Factors Identified</span><p class="metric-val c-purple">8 / 12</p><span class="metric-sub">Visible reasoning coverage</span></div>
+              <div class="metric-card"><span class="metric-lbl">Blind Spots Found</span><p class="metric-val c-red">4 Critical</p><span class="metric-sub">Overlooked dimensions</span></div>
+              <div class="metric-card"><span class="metric-lbl">Assumptions Exposed</span><p class="metric-val c-green">6 Unchecked</p><span class="metric-sub">Beliefs to verify</span></div>
+              <div class="metric-card"><span class="metric-lbl">Cognitive Traps</span><p class="metric-val c-gold">3 Possible</p><span class="metric-sub">Bias patterns detected</span></div>
+            </div>
+            <div class="mockup-chat">
+              <div class="chat-bubble bubble-ai"><span class="bubble-sender">Thinkwise Analysis</span><p>&#34;You&#39;re focused on the salary increase, but your reasoning doesn&#39;t address the impact on your long-term skill trajectory or team relationships.&#34;</p></div>
+              <div class="chat-bubble bubble-user"><span class="bubble-sender">Your Decision Input</span><p>&#34;I&#39;m considering switching to the startup because the pay is better and the work seems more exciting.&#34;</p></div>
+              <div class="coach-pill"><span class="coach-lbl">BLIND SPOT DETECTED</span><span>Availability bias &mdash; &#34;exciting&#34; is what&#39;s salient now, not what&#39;s sustainable.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAPABILITIES -->
+    <section id="capabilities" class="tw-section" style="padding-bottom:60px">
+      <div class="tw-container text-center">
+        <div class="eyebrow-rule">&mdash; What Thinkwise Surfaces &mdash;</div>
+        <h2 class="section-heading">Every good decision starts with seeing clearly</h2>
+        <p class="section-sub">Thinkwise maps your reasoning, exposes blind spots, challenges assumptions, and asks the questions your mind skipped over.</p>
+        <div class="caps-cloud">
+          <div class="cap-pill"><span class="cap-icon" style="background:rgba(124,58,237,0.1);color:#7C3AED">&#x1F3AF;</span><span>Focus Mapping</span></div>
+          <div class="cap-pill"><span class="cap-icon" style="background:rgba(16,185,129,0.1);color:#10B981">&#x1F441;&#xFE0F;</span><span>Blind Spot Finder</span></div>
+          <div class="cap-pill"><span class="cap-icon" style="background:rgba(245,158,11,0.1);color:#F59E0B">&#x26A1;</span><span>Assumption Auditor</span></div>
+          <div class="cap-pill"><span class="cap-icon" style="background:rgba(56,189,248,0.1);color:#38BDF8">&#x1F50D;</span><span>Conflict Detector</span></div>
+          <div class="cap-pill"><span class="cap-icon" style="background:rgba(236,72,153,0.1);color:#EC4899">&#x1F9E0;</span><span>Cognitive Bias Scan</span></div>
+          <div class="cap-pill"><span class="cap-icon" style="background:rgba(239,68,68,0.1);color:#EF4444">&#x1F4AC;</span><span>Deep Reflection Questions</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="tw-section">
+      <div class="tw-container">
+        <div class="text-center" style="margin-bottom:56px">
+          <div class="eyebrow-rule">&mdash; Our Process &mdash;</div>
+          <h2 class="section-heading">Three steps to total decision clarity</h2>
+          <p class="section-sub">From describing your situation to walking away with a clear, bias-checked summary of your thinking.</p>
+        </div>
+        <div class="process-wrap">
+          <svg class="process-svg" viewBox="0 0 1000 120" fill="none" preserveAspectRatio="none" aria-hidden="true">
+            <path class="dash-path" d="M 50 60 C 250 10, 350 110, 500 60 C 650 10, 750 110, 950 60" stroke="#7C3AED" stroke-width="2.5" stroke-dasharray="6 6"/>
+            <circle cx="50" cy="60" r="6" fill="#7C3AED" class="pulse-dot"/>
+            <circle cx="500" cy="60" r="6" fill="#7C3AED" class="pulse-dot"/>
+            <circle cx="950" cy="60" r="6" fill="#7C3AED" class="pulse-dot"/>
+          </svg>
+          <div class="process-grid">
+            <div class="process-card tilt-l">
+              <span class="step-num">01</span>
+              <h3 class="step-title">Describe Your Decision</h3>
+              <p class="step-desc">Share what you&#39;re deciding, the details you have, and the reasons you&#39;re leaning the way you are.</p>
+              <span class="step-pill">Decision Audit</span>
+            </div>
+            <div class="process-card tilt-r">
+              <span class="step-num" style="color:var(--accent)">02</span>
+              <h3 class="step-title">AI Maps Your Thinking</h3>
+              <p class="step-desc">Thinkwise identifies blind spots, examines assumptions, surfaces conflicts, and detects cognitive bias patterns.</p>
+              <span class="step-pill" style="border-color:rgba(124,58,237,0.3);color:var(--accent)">Gemini AI Model</span>
+            </div>
+            <div class="process-card tilt-s">
+              <span class="step-num">03</span>
+              <h3 class="step-title">Reflect &amp; Decide</h3>
+              <p class="step-desc">Answer targeted questions, go deeper on what matters, and receive a full thinking summary to download and keep.</p>
+              <span class="step-pill">Your Thinking Report</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- APP SECTION -->
+    <section id="app-section" class="tw-section app-section-bg">
+      <div class="tw-container">
+        <div class="text-center" style="margin-bottom:48px">
+          <div class="eyebrow-rule">&mdash; Start Your Analysis &mdash;</div>
+          <h2 class="section-heading">Help me think through a decision</h2>
+          <p class="section-sub">Describe what you&#39;re deciding and why you&#39;re leaning a certain way. I&#39;ll help you notice what you might be overlooking.</p>
+        </div>
+
+        <!-- FORM VIEW -->
+        <div id="view-form">
+          <div class="form-card fade-up">
+            <div class="form-card-header">
+              <h2>Your Decision</h2>
+              <p>Fill in what you know. The more detail you provide, the sharper the analysis.</p>
+            </div>
+            <form id="decision-form" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="inp-decision">What decision are you considering? <span class="req">*</span></label>
+                <textarea id="inp-decision" class="form-field" rows="3" maxlength="500" required placeholder="e.g., Whether to accept a 6-month internship offer at a fintech startup"></textarea>
+                <span class="form-hint">Describe the decision you&#39;re trying to make</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="inp-details">What details do you already have?</label>
+                <textarea id="inp-details" class="form-field" rows="4" maxlength="2000" placeholder="e.g., stipend Rs 25000/mo, 6 months, remote, product role, collides with 7th semester exams"></textarea>
+                <span class="form-hint">Optional but helpful &mdash; what information do you already know?</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="inp-reasons">Why are you leaning this way? <span class="req">*</span></label>
+                <textarea id="inp-reasons" class="form-field" rows="3" maxlength="1000" required placeholder="e.g., the stipend is good, it&#39;s a well-known startup, product work is what I want"></textarea>
+                <span class="form-hint">What&#39;s driving your initial lean?</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="inp-type">Decision type (optional)</label>
+                <select id="inp-type" class="form-field">
+                  <option value="">Select a category</option>
+                  <option value="career">Career</option>
+                  <option value="education">Education</option>
+                  <option value="financial">Financial</option>
+                  <option value="startup">Startup</option>
+                  <option value="personal">Personal</option>
+                  <option value="relationship">Relationship</option>
+                  <option value="health">Health</option>
+                  <option value="purchase">Purchase</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-accent btn-lg" id="btn-analyze">Analyze My Thinking <span class="btn-arrow">&#8594;</span></button>
+                <button type="button" class="btn btn-outline btn-lg" id="btn-example">Try the Internship Example</button>
+              </div>
+              <div class="form-err" id="form-err" aria-live="polite"></div>
+            </form>
+          </div>
+        </div>
+
+        <!-- LOADING VIEW -->
+        <div id="view-loading" class="hidden">
+          <div class="loading-card fade-up">
+            <div class="spinner"></div>
+            <h2 class="loading-title">Analyzing your thinking<span class="dot-pulse"><span>.</span><span>.</span><span>.</span></span></h2>
+            <p class="loading-sub">Identifying blind spots, assumptions &amp; cognitive patterns</p>
+          </div>
+        </div>
+
+        <!-- RESULTS VIEW -->
+        <div id="view-results" class="hidden">
+          <div class="results-banner" aria-live="polite">&#x1F9E0; This tool asks questions. The decision stays entirely yours.</div>
+          <div class="results-grid" id="results-grid"></div>
+          <div class="results-cta">
+            <button class="btn btn-accent btn-lg" id="btn-go-reflect">Reflect on These Questions <span class="btn-arrow">&#8594;</span></button>
+            <button class="btn btn-outline btn-lg" id="btn-skip-reflect">Skip to Summary</button>
+          </div>
+        </div>
+
+        <!-- REFLECTION VIEW -->
+        <div id="view-reflect" class="hidden">
+          <div class="reflect-card fade-up">
+            <div class="reflect-head">
+              <div class="eyebrow-rule" style="color:rgba(255,255,255,0.4);margin-bottom:16px">&mdash; Go Deeper &mdash;</div>
+              <h2>Reflect on These Questions</h2>
+              <p>Take your time. There are no right or wrong answers. Your responses sharpen the final summary.</p>
+            </div>
+            <div class="q-list" id="q-list"></div>
+            <div class="reflect-actions">
+              <button class="btn btn-accent btn-lg" id="btn-submit-reflect">Generate My Summary <span class="btn-arrow">&#8594;</span></button>
+              <button class="btn btn-ghost btn-lg" id="btn-skip-reflect2" style="color:rgba(255,255,255,0.5)">Skip</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUMMARY VIEW -->
+        <div id="view-summary" class="hidden">
+          <div class="summary-card fade-up">
+            <div class="summary-head">
+              <div class="eyebrow-rule" style="margin-bottom:16px">&mdash; Your Thinking Report &mdash;</div>
+              <h2>My Thinking Summary</h2>
+              <p>Your personalized report captures your decision, reasoning, insights gained, and open questions.</p>
+            </div>
+            <div class="summary-body" id="summary-body"></div>
+            <div class="summary-actions">
+              <button class="btn btn-outline" id="btn-copy">&#x1F4CB; Copy Summary</button>
+              <button class="btn btn-outline" id="btn-download">&#x2B07;&#xFE0F; Download .md</button>
+              <button class="btn btn-accent" id="btn-new">New Analysis &#8594;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="tw-footer">
+      <div class="footer-glow" aria-hidden="true"></div>
+      <div class="tw-container">
+        <div class="footer-top">
+          <div class="footer-tagline">
+            <span class="footer-line1">Let&#39;s</span>
+            <span class="footer-line2">Think.</span>
+          </div>
+          <a href="#app-section" class="btn btn-accent btn-lg">Start Free Analysis <span class="btn-arrow">&#8594;</span></a>
+        </div>
+        <div class="footer-bottom">
+          <div class="footer-copy">&copy; <span id="yr"></span> Thinkwise &mdash; See what you&#39;re not seeing. Decide on your own terms.</div>
+          <div class="footer-links">
+            <a href="#capabilities">Capabilities</a>
+            <a href="#how-it-works">How it Works</a>
+            <a href="#app-section">Try It</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>document.getElementById('yr').textContent=new Date().getFullYear();</script>
+  <script src="/js/thinkwise-app.js" defer></script>
+</body>
+</html>
