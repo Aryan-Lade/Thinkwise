@@ -1,0 +1,8 @@
+.env
+.git
+.github
+tests/
+__pycache__/
+*.pyc
+uvicorn.log
+static/assets/index-COGX8mVU.js

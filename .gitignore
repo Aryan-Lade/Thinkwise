@@ -85,3 +85,6 @@ firebase-debug.*.log
 secrets/
 *.secret
 *.pem
+
+# Legacy bundles
+static/assets/*.js
