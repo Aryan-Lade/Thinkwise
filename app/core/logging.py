@@ -4,11 +4,9 @@ Application logging configuration
 
 import logging
 import sys
-from typing import Any, Dict
 
 import google.cloud.logging
 from google.cloud.logging.handlers import CloudLoggingHandler
-from google.oauth2 import service_account
 
 from app.core.config import get_settings
 
@@ -27,7 +25,7 @@ def setup_logging() -> None:
     # Create formatter
     formatter = logging.Formatter(
         fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
 
     # Console handler
@@ -46,7 +44,9 @@ def setup_logging() -> None:
         logging.info("Google Cloud Logging enabled")
     except Exception as e:
         # Fallback to console logging only
-        logging.warning(f"Google Cloud Logging not available: {e}. Using console logging only.")
+        logging.warning(
+            f"Google Cloud Logging not available: {e}. Using console logging only."
+        )
 
 
 def get_logger(name: str) -> logging.Logger:

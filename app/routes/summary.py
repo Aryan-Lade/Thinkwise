@@ -2,16 +2,21 @@
 Summary endpoint for generating thinking summary
 """
 
-from fastapi import APIRouter, HTTPException, Request, status
-from fastapi.responses import JSONResponse
 import time
 from datetime import datetime
 
-from app.core.config import get_settings
+from fastapi import APIRouter, HTTPException, Request, status
+from fastapi.responses import JSONResponse
+
 from app.core.errors import BlindSpotException, ValidationError
 from app.core.logging import get_logger
+from app.models.schemas import (
+    AnalysisResponse,
+    DecisionType,
+    RefineResponse,
+    SummaryResponse,
+)
 from app.services.session_service import session_service
-from app.models.schemas import SummaryResponse, DecisionType
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -59,10 +64,12 @@ async def generate_summary(request: Request):
             if entry.get("type") == "initial_analysis" and latest_analysis is None:
                 # Reconstruct analysis from stored data
                 from app.models.schemas import AnalysisResponse
+
                 latest_analysis = AnalysisResponse(**entry["analysis"])
             elif entry.get("type") == "refinement" and latest_refinement is None:
                 # Reconstruct refinement from stored data
                 from app.models.schemas import RefineResponse
+
                 latest_refinement = RefineResponse(**entry["refinement"])
                 user_answers = entry.get("answers", [])
 
@@ -86,7 +93,7 @@ async def generate_summary(request: Request):
             latest_analysis=latest_analysis,
             latest_refinement=latest_refinement,
             user_answers=user_answers,
-            session_info=session_info
+            session_info=session_info,
         )
 
         # Determine decision type from session info or default
@@ -112,7 +119,9 @@ async def generate_summary(request: Request):
             questions=latest_analysis.questions,
             answers=user_answers,
             thinking_summary=thinking_summary,
-            created_at=datetime.fromtimestamp(session_data.get("created_at", time.time()))
+            created_at=datetime.fromtimestamp(
+                session_data.get("created_at", time.time())
+            ),
         )
 
         # Store summary in session history
@@ -121,32 +130,28 @@ async def generate_summary(request: Request):
             {
                 "type": "summary_generated",
                 "timestamp": time.time(),
-                "summary": summary.model_dump()
-            }
+                "summary": summary.model_dump(),
+            },
         )
 
         process_time = time.time() - start_time
-        logger.info(f"Summary generated in {process_time:.2f}s for session {session_id}")
+        logger.info(
+            f"Summary generated in {process_time:.2f}s for session {session_id}"
+        )
 
         return summary
 
     except ValidationError as e:
         logger.warning(f"Validation error in summary: {e.message}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=e.message
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
     except BlindSpotException as e:
         logger.error(f"BlindSpot error in summary: {e.message}")
-        raise HTTPException(
-            status_code=e.status_code,
-            detail=e.message
-        )
+        raise HTTPException(status_code=e.status_code, detail=e.message)
     except Exception as e:
         logger.error(f"Unexpected error in generate_summary: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
+            detail="Internal server error",
         )
 
 
@@ -154,7 +159,7 @@ def _generate_thinking_summary(
     latest_analysis: "AnalysisResponse",
     latest_refinement: "RefineResponse",
     user_answers: list,
-    session_info: dict
+    session_info: dict,
 ) -> str:
     """
     Generate a formatted thinking summary for the user.
@@ -186,7 +191,9 @@ def _generate_thinking_summary(
     summary_parts.append(f"**Decision:** {latest_analysis.decision_restated}")
     if session_info.get("details"):
         summary_parts.append(f"**Details:** {session_info['details']}")
-    summary_parts.append(f"**Your reasons:** {session_info.get('reasons', 'Not provided')}")
+    summary_parts.append(
+        f"**Your reasons:** {session_info.get('reasons', 'Not provided')}"
+    )
     if session_info.get("decision_type"):
         summary_parts.append(f"**Decision type:** {session_info['decision_type']}")
     summary_parts.append("")
@@ -243,7 +250,7 @@ def _generate_thinking_summary(
         summary_parts.append("## Where Your Reasoning May Pull Against Itself")
         summary_parts.append("")
         for conflict in latest_analysis.conflicts:
-            summary_parts.append(f"### Tension between two statements:")
+            summary_parts.append("### Tension between two statements:")
             summary_parts.append("")
             summary_parts.append(f"> {conflict.statement_a}")
             summary_parts.append(f"> {conflict.statement_b}")
@@ -260,8 +267,7 @@ def _generate_thinking_summary(
 
         # Create a map of question_id to answer for easy lookup
         answer_map = {
-            answer["question_id"]: answer["answer"]
-            for answer in user_answers
+            answer["question_id"]: answer["answer"] for answer in user_answers
         }
 
         # Show questions from latest refinement with user answers
@@ -273,28 +279,39 @@ def _generate_thinking_summary(
             summary_parts.append("")
 
             # Show what changed if available
-            if hasattr(latest_refinement, 'what_changed') and latest_refinement.what_changed:
-                summary_parts.append(f"*What shifted in your thinking:* {latest_refinement.what_changed}")
+            if (
+                hasattr(latest_refinement, "what_changed")
+                and latest_refinement.what_changed
+            ):
+                summary_parts.append(
+                    f"*What shifted in your thinking:* {latest_refinement.what_changed}"
+                )
                 summary_parts.append("")
 
     elif latest_analysis.questions:
         summary_parts.append("## Questions for Further Reflection")
         summary_parts.append("")
-        summary_parts.append("Consider these open-ended questions to deepen your thinking:")
+        summary_parts.append(
+            "Consider these open-ended questions to deepen your thinking:"
+        )
         summary_parts.append("")
         for question in latest_analysis.questions:
             summary_parts.append(f"### {question.theme.title()}: {question.text}")
             summary_parts.append("")
 
     # Additional insights
-    mind_change = getattr(latest_refinement, "what_would_change_your_mind", None) or getattr(latest_analysis, "what_would_change_your_mind", None)
+    mind_change = getattr(
+        latest_refinement, "what_would_change_your_mind", None
+    ) or getattr(latest_analysis, "what_would_change_your_mind", None)
     if mind_change:
         summary_parts.append("## What Would Change Your Mind?")
         summary_parts.append("")
         summary_parts.append(mind_change)
         summary_parts.append("")
 
-    rev_note = getattr(latest_refinement, "reversibility_note", None) or getattr(latest_analysis, "reversibility_note", None)
+    rev_note = getattr(latest_refinement, "reversibility_note", None) or getattr(
+        latest_analysis, "reversibility_note", None
+    )
     if rev_note:
         summary_parts.append("## Thoughts on Reversibility")
         summary_parts.append("")
@@ -305,7 +322,9 @@ def _generate_thinking_summary(
     if latest_analysis.possible_biases:
         summary_parts.append("## Possible Thinking Patterns to Notice")
         summary_parts.append("")
-        summary_parts.append("*(These are offered tentatively as patterns to reflect on, not as conclusions)*")
+        summary_parts.append(
+            "*(These are offered tentatively as patterns to reflect on, not as conclusions)*"
+        )
         summary_parts.append("")
         for bias in latest_analysis.possible_biases:
             summary_parts.append(f"### {bias.name}")
@@ -316,10 +335,14 @@ def _generate_thinking_summary(
     # Footer
     summary_parts.append("---")
     summary_parts.append("")
-    summary_parts.append("**Remember:** This tool asks questions to help you think more deeply.")
+    summary_parts.append(
+        "**Remember:** This tool asks questions to help you think more deeply."
+    )
     summary_parts.append("The decision belongs entirely to you.")
     summary_parts.append("")
-    summary_parts.append(f"*Generated on: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}*")
+    summary_parts.append(
+        f"*Generated on: {datetime.now().strftime('%B %d, %Y at %I:%M %p')}*"
+    )
 
     return "\n".join(summary_parts)
 
@@ -333,5 +356,5 @@ async def summary_options():
         headers={
             "Access-Control-Allow-Methods": "POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type",
-        }
+        },
     )

@@ -10,7 +10,7 @@ from app.main import app
 
 def load_internship_fixture():
     """Load the internship example fixture."""
-    with open('tests/fixtures/internship_example.json', 'r') as f:
+    with open("tests/fixtures/internship_example.json", "r") as f:
         return json.load(f)
 
 
@@ -44,7 +44,7 @@ def test_internship_example_analysis(client):
         "decision": fixture["decision"],
         "details": fixture["details"],
         "reasons": fixture["reasons"],
-        "decision_type": fixture["decision_type"]
+        "decision_type": fixture["decision_type"],
     }
 
     # Make request to analyze endpoint
@@ -131,7 +131,7 @@ def test_internship_example_no_directive_language(client):
         "decision": fixture["decision"],
         "details": fixture["details"],
         "reasons": fixture["reasons"],
-        "decision_type": fixture["decision_type"]
+        "decision_type": fixture["decision_type"],
     }
 
     # Make request to analyze endpoint
@@ -170,14 +170,14 @@ def test_internship_example_no_directive_language(client):
         "it would be wise to",
         "the smarter choice",
         "the more beneficial option",
-        "you would be better off"
+        "you would be better off",
     ]
 
     # Fields to check for directive language
     string_fields_to_check = [
         "decision_restated",
         "what_would_change_your_mind",
-        "reversibility_note"
+        "reversibility_note",
     ]
 
     # Check simple string fields
@@ -186,8 +186,9 @@ def test_internship_example_no_directive_language(client):
         if value and isinstance(value, str):
             value_lower = value.lower()
             for phrase in directive_phrases:
-                assert phrase not in value_lower, \
-                    f"Directive phrase '{phrase}' found in {field}: '{value}'"
+                assert (
+                    phrase not in value_lower
+                ), f"Directive phrase '{phrase}' found in {field}: '{value}'"
 
     # Check complex fields
     complex_checks = [
@@ -195,7 +196,7 @@ def test_internship_example_no_directive_language(client):
         ("assumptions", ["text", "how_to_test"]),
         ("conflicts", ["statement_a", "statement_b", "tension"]),
         ("questions", ["text"]),
-        ("possible_biases", ["why_it_may_apply"])
+        ("possible_biases", ["why_it_may_apply"]),
     ]
 
     for field_name, subfields in complex_checks:
@@ -208,8 +209,9 @@ def test_internship_example_no_directive_language(client):
                         if value and isinstance(value, str):
                             value_lower = value.lower()
                             for phrase in directive_phrases:
-                                assert phrase not in value_lower, \
-                                    f"Directive phrase '{phrase}' found in {field_name}.{subfield}: '{value}'"
+                                assert (
+                                    phrase not in value_lower
+                                ), f"Directive phrase '{phrase}' found in {field_name}.{subfield}: '{value}'"
 
 
 def test_internship_example_refine_flow(client):
@@ -221,7 +223,7 @@ def test_internship_example_refine_flow(client):
         "decision": fixture["decision"],
         "details": fixture["details"],
         "reasons": fixture["reasons"],
-        "decision_type": fixture["decision_type"]
+        "decision_type": fixture["decision_type"],
     }
 
     response = client.post("/api/v1/analyze", json=request_data)
@@ -236,17 +238,18 @@ def test_internship_example_refine_flow(client):
     if len(questions) > 0:
         # Create answers for first few questions
         answers = []
-        for i, question in enumerate(questions[:min(3, len(questions))]):  # Answer up to 3 questions
-            answers.append({
-                "question_id": question["id"],
-                "answer": f"This is my answer to question {i+1} about {question['theme']}."
-            })
+        for i, question in enumerate(
+            questions[: min(3, len(questions))]
+        ):  # Answer up to 3 questions
+            answers.append(
+                {
+                    "question_id": question["id"],
+                    "answer": f"This is my answer to question {i+1} about {question['theme']}.",
+                }
+            )
 
         # Step 3: Call refine endpoint
-        refine_data = {
-            "session_id": session_id,
-            "answers": answers
-        }
+        refine_data = {"session_id": session_id, "answers": answers}
 
         refine_response = client.post("/api/v1/refine", json=refine_data)
 
@@ -286,7 +289,7 @@ def test_internship_example_summary_flow(client):
         "decision": fixture["decision"],
         "details": fixture["details"],
         "reasons": fixture["reasons"],
-        "decision_type": fixture["decision_type"]
+        "decision_type": fixture["decision_type"],
     }
 
     response = client.post("/api/v1/analyze", json=request_data)
@@ -297,9 +300,7 @@ def test_internship_example_summary_flow(client):
     assert session_id is not None
 
     # Step 2: Call summary endpoint (without refinement)
-    summary_data = {
-        "session_id": session_id
-    }
+    summary_data = {"session_id": session_id}
 
     summary_response = client.post("/api/v1/summary", json=summary_data)
 
@@ -347,17 +348,16 @@ def test_internship_example_summary_flow(client):
     if len(questions) > 0:
         # Prepare answers
         answers = []
-        for question in questions[:min(2, len(questions))]:  # Answer up to 2 questions
-            answers.append({
-                "question_id": question["id"],
-                "answer": f"My refined answer about {question['theme']}."
-            })
+        for question in questions[: min(2, len(questions))]:  # Answer up to 2 questions
+            answers.append(
+                {
+                    "question_id": question["id"],
+                    "answer": f"My refined answer about {question['theme']}.",
+                }
+            )
 
         # Call refine first
-        refine_data = {
-            "session_id": session_id,
-            "answers": answers
-        }
+        refine_data = {"session_id": session_id, "answers": answers}
 
         refine_response = client.post("/api/v1/refine", json=refine_data)
         assert refine_response.status_code == 200
@@ -372,6 +372,75 @@ def test_internship_example_summary_flow(client):
 
         # Thinking summary should still be present and meaningful
         assert len(summary_with_refinement["thinking_summary"]) > 0
+
+
+def test_internship_example_specific_blind_spots(client):
+    """
+    R1-R6: Test asserting that the internship example output specifically:
+    1. Covers academics impact
+    2. Covers learning / mentorship quality
+    3. Covers long-term career prospects
+    4. Questions the stated assumptions with verification tests
+    5. Contains zero directive language and no recommendation field
+    """
+    fixture = load_internship_fixture()
+    response = client.post(
+        "/api/v1/analyze",
+        json={
+            "decision": fixture["decision"],
+            "details": fixture["details"],
+            "reasons": fixture["reasons"],
+            "decision_type": fixture["decision_type"],
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    all_text = json.dumps(data).lower()
+
+    # 1. Output covers academics impact
+    assert any(
+        term in all_text
+        for term in ["academic", "college", "course", "schedule", "grades"]
+    ), "Expected analysis to cover academic impact"
+
+    # 2. Output covers learning / mentorship quality
+    assert any(
+        term in all_text
+        for term in ["mentor", "mentorship", "learning quality", "guidance"]
+    ), "Expected analysis to cover learning/mentorship quality"
+
+    # 3. Output covers long-term career prospects
+    assert any(
+        term in all_text for term in ["career", "long-term", "prospects", "future"]
+    ), "Expected analysis to cover long-term career prospects"
+
+    # 4. Questions the stated assumptions
+    assumptions = data.get("assumptions", [])
+    assert len(assumptions) >= 1
+    for a in assumptions:
+        assert "how_to_test" in a
+        assert len(a["how_to_test"]) > 5
+
+    # 5. Schema guarantee: NO recommendation field
+    assert "recommendation" not in data
+    assert "recommendations" not in data
+    assert "suggested_decision" not in data
+    assert "advised_choice" not in data
+
+    # 6. Anti-directive language enforcement
+    banned_phrases = [
+        "you should",
+        "i recommend",
+        "the best option is",
+        "my advice is",
+        "you must",
+        "definitely choose",
+        "clearly you should",
+    ]
+    for banned in banned_phrases:
+        assert (
+            banned not in all_text
+        ), f"Found directive banned phrase '{banned}' in output"
 
 
 if __name__ == "__main__":

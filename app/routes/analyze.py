@@ -2,20 +2,20 @@
 Analysis endpoint for decision blind spot analysis
 """
 
-from fastapi import APIRouter, HTTPException, Request, status
-from fastapi.responses import JSONResponse
 import time
 
+from fastapi import APIRouter, HTTPException, Request, status
+from fastapi.responses import JSONResponse
+
 from app.core import constants
-from app.core.config import get_settings
 from app.core.errors import BlindSpotException, ValidationError
 from app.core.logging import get_logger
+from app.models.schemas import AnalysisResponse, DecisionType
 from app.services.cache_service import cache_service
 from app.services.gemini_service import gemini_service
 from app.services.guard_service import guard_service
 from app.services.safety_service import safety_service
 from app.services.session_service import session_service
-from app.models.schemas import AnalysisResponse, DecisionType
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -38,7 +38,10 @@ async def analyze_decision(request: Request):
 
     try:
         # Get request data
-        data = await request.json()
+        try:
+            data = await request.json()
+        except Exception:
+            raise ValidationError("Invalid JSON payload or unsupported Content-Type")
 
         # Extract and validate fields
         decision = data.get("decision", "").strip()
@@ -88,7 +91,9 @@ async def analyze_decision(request: Request):
                 session_id=session_id,
                 round=1,
                 decision_restated=decision,
-                reasoning_map=AnalysisResponse.model_fields["reasoning_map"].default_factory(),
+                reasoning_map=AnalysisResponse.model_fields[
+                    "reasoning_map"
+                ].default_factory(),
                 overlooked_factors=[],
                 assumptions=[],
                 conflicts=[],
@@ -99,7 +104,7 @@ async def analyze_decision(request: Request):
                 what_would_change_your_mind=None,
                 reversibility_note=None,
                 safety_flag=True,
-                guard_notes=["Safety check triggered - crisis indicators detected"]
+                guard_notes=["Safety check triggered - crisis indicators detected"],
             )
 
             # In a real implementation, we might return the safety response differently
@@ -108,9 +113,7 @@ async def analyze_decision(request: Request):
 
             # Store the safety response in session for potential use
             session_service.update_session(
-                session_id,
-                {"safety_response": safety_response},
-                merge=True
+                session_id, {"safety_response": safety_response}, merge=True
             )
 
             process_time = time.time() - start_time
@@ -118,7 +121,9 @@ async def analyze_decision(request: Request):
             return safety_analysis
 
         # Check cache for identical request
-        cached_analysis = cache_service.get_analysis(decision, details, reasons, decision_type)
+        cached_analysis = cache_service.get_analysis(
+            decision, details, reasons, decision_type
+        )
         if cached_analysis is not None:
             logger.info(f"Returning cached analysis for decision: {decision[:30]}...")
             return cached_analysis
@@ -131,7 +136,7 @@ async def analyze_decision(request: Request):
             decision=decision,
             details=details,
             reasons=reasons,
-            decision_type=decision_type
+            decision_type=decision_type,
         )
 
         # Ensure session_id is set
@@ -149,34 +154,29 @@ async def analyze_decision(request: Request):
             {
                 "type": "initial_analysis",
                 "timestamp": time.time(),
-                "analysis": analysis.model_dump()
-            }
+                "analysis": analysis.model_dump(),
+            },
         )
 
         process_time = time.time() - start_time
-        logger.info(f"Analysis completed in {process_time:.2f}s for session {session_id}")
+        logger.info(
+            f"Analysis completed in {process_time:.2f}s for session {session_id}"
+        )
 
         return analysis
 
     except ValidationError as e:
         logger.warning(f"Validation error: {e.message}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=e.message
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
     except BlindSpotException as e:
         logger.error(f"BlindSpot error: {e.message}")
-        raise HTTPException(
-            status_code=e.status_code,
-            detail=e.message
-        )
+        raise HTTPException(status_code=e.status_code, detail=e.message)
     except Exception as e:
         logger.error(f"Unexpected error in analyze_decision: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Analysis error: {str(e)}"
+            detail=f"Analysis error: {str(e)}",
         )
-
 
 
 # Add OPTIONS handler for CORS preflight
@@ -188,5 +188,5 @@ async def analyze_options():
         headers={
             "Access-Control-Allow-Methods": "POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type",
-        }
+        },
     )

@@ -41,8 +41,8 @@ dev = [
 
 [tool.ruff]
 select = ["E", "F", "W", "C90", "I"]
-ignore = []
-line-length = 88
+ignore = ["E501", "C901"]
+line-length = 120
 target-version = "py312"
 
 [tool.black]

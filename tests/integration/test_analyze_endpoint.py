@@ -24,7 +24,7 @@ def test_analyze_endpoint_success(client):
         "decision": "Whether to accept a 6-month internship offer",
         "details": "Good stipend, close to home, working hours 9-5, role in software development, learning opportunities include industry tools, college schedule has classes Monday-Thursday",
         "reasons": "Mainly considering it because the stipend is good, the company is close to home, and it will provide industry experience",
-        "decision_type": "career"
+        "decision_type": "career",
     }
 
     response = client.post("/api/v1/analyze", json=request_data)
@@ -73,65 +73,64 @@ def test_analyze_endpoint_validation_errors(client):
     """Test validation errors on the analyze endpoint."""
 
     # Test missing decision
-    response = client.post("/api/v1/analyze", json={
-        "details": "Some details",
-        "reasons": "Some reasons"
-    })
+    response = client.post(
+        "/api/v1/analyze", json={"details": "Some details", "reasons": "Some reasons"}
+    )
     assert response.status_code == 400
     assert "Decision is required" in response.json()["detail"]
 
     # Test missing reasons
-    response = client.post("/api/v1/analyze", json={
-        "decision": "Test decision",
-        "details": "Some details"
-    })
+    response = client.post(
+        "/api/v1/analyze", json={"decision": "Test decision", "details": "Some details"}
+    )
     assert response.status_code == 400
     assert "Reasons for leaning are required" in response.json()["detail"]
 
     # Test decision too long
     long_decision = "x" * 501  # Exceeds MAX_DECISION_LENGTH of 500
-    response = client.post("/api/v1/analyze", json={
-        "decision": long_decision,
-        "reasons": "Test reasons"
-    })
+    response = client.post(
+        "/api/v1/analyze", json={"decision": long_decision, "reasons": "Test reasons"}
+    )
     assert response.status_code == 400
     assert "Decision too long" in response.json()["detail"]
 
     # Test reasons too long
     long_reasons = "x" * 1001  # Exceeds MAX_REASONS_LENGTH of 1000
-    response = client.post("/api/v1/analyze", json={
-        "decision": "Test decision",
-        "reasons": long_reasons
-    })
+    response = client.post(
+        "/api/v1/analyze", json={"decision": "Test decision", "reasons": long_reasons}
+    )
     assert response.status_code == 400
     assert "Reasons too long" in response.json()["detail"]
 
     # Test details too long
     long_details = "x" * 2001  # Exceeds MAX_DETAILS_LENGTH of 2000
-    response = client.post("/api/v1/analyze", json={
-        "decision": "Test decision",
-        "details": long_details,
-        "reasons": "Test reasons"
-    })
+    response = client.post(
+        "/api/v1/analyze",
+        json={
+            "decision": "Test decision",
+            "details": long_details,
+            "reasons": "Test reasons",
+        },
+    )
     assert response.status_code == 400
     assert "Details too long" in response.json()["detail"]
 
     # Test invalid decision type
-    response = client.post("/api/v1/analyze", json={
-        "decision": "Test decision",
-        "reasons": "Test reasons",
-        "decision_type": "invalid_type"
-    })
+    response = client.post(
+        "/api/v1/analyze",
+        json={
+            "decision": "Test decision",
+            "reasons": "Test reasons",
+            "decision_type": "invalid_type",
+        },
+    )
     assert response.status_code == 400
     assert "Invalid decision type" in response.json()["detail"]
 
 
 def test_analyze_endpoint_minimal_request(client):
     """Test analyze endpoint with minimal valid request."""
-    request_data = {
-        "decision": "Whether to take the job",
-        "reasons": "The pay is good"
-    }
+    request_data = {"decision": "Whether to take the job", "reasons": "The pay is good"}
 
     response = client.post("/api/v1/analyze", json=request_data)
 
@@ -148,7 +147,7 @@ def test_analyze_endpoint_with_all_fields(client):
         "decision": "Whether to pursue a master's degree",
         "details": "Program is 2 years full-time, costs $30,000 per year, focuses on computer science, offered by local university",
         "reasons": "I want to advance my career, increase my earning potential, and gain deeper knowledge in my field",
-        "decision_type": "education"
+        "decision_type": "education",
     }
 
     response = client.post("/api/v1/analyze", json=request_data)
@@ -161,9 +160,11 @@ def test_analyze_endpoint_with_all_fields(client):
 
     # Should have generated meaningful analysis
     assert len(data["questions"]) > 0
-    assert len(data["overlooked_factors"]) >= 0  # May be empty if algorithm determines none
-    assert len(data["assumptions"]) >= 0         # May be empty if algorithm determines none
-    assert len(data["conflicts"]) >= 0           # May be empty if algorithm determines none
+    assert (
+        len(data["overlooked_factors"]) >= 0
+    )  # May be empty if algorithm determines none
+    assert len(data["assumptions"]) >= 0  # May be empty if algorithm determines none
+    assert len(data["conflicts"]) >= 0  # May be empty if algorithm determines none
 
 
 def test_analyze_endpoint_options(client):

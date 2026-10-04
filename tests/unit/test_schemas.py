@@ -11,7 +11,7 @@ from app.models.schemas import (
     Assumption,
     Conflict,
     Question,
-    DecisionType
+    DecisionType,
 )
 
 
@@ -21,7 +21,7 @@ def test_reasoning_map_creation():
         stated_factors=["factor1", "factor2"],
         stated_reasons=["reason1", "reason2"],
         most_visible_factors=["visible1"],
-        thin_or_missing_areas=["thin1"]
+        thin_or_missing_areas=["thin1"],
     )
 
     assert len(reasoning_map.stated_factors) == 2
@@ -33,8 +33,7 @@ def test_reasoning_map_creation():
 def test_overlooked_factor_creation():
     """Test creating an OverlookedFactor instance."""
     factor = OverlookedFactor(
-        text="Test overlooked factor",
-        why_it_matters="This matters because..."
+        text="Test overlooked factor", why_it_matters="This matters because..."
     )
 
     assert factor.text == "Test overlooked factor"
@@ -44,10 +43,7 @@ def test_overlooked_factor_creation():
 
 def test_assumption_creation():
     """Test creating an Assumption instance."""
-    assumption = Assumption(
-        text="Test assumption",
-        how_to_test="Test it by..."
-    )
+    assumption = Assumption(text="Test assumption", how_to_test="Test it by...")
 
     assert assumption.text == "Test assumption"
     assert assumption.how_to_test == "Test it by..."
@@ -59,7 +55,7 @@ def test_conflict_creation():
     conflict = Conflict(
         statement_a="Statement A",
         statement_b="Statement B",
-        tension="They conflict because..."
+        tension="They conflict because...",
     )
 
     assert conflict.statement_a == "Statement A"
@@ -70,10 +66,7 @@ def test_conflict_creation():
 
 def test_question_creation():
     """Test creating a Question instance."""
-    question = Question(
-        theme="assumptions",
-        text="What is your assumption?"
-    )
+    question = Question(theme="assumptions", text="What is your assumption?")
 
     assert question.theme == "assumptions"
     assert question.text == "What is your assumption?"
@@ -103,14 +96,14 @@ def test_analysis_response_creation():
             "stated_factors": ["factor1"],
             "stated_reasons": ["reason1"],
             "most_visible_factors": ["visible1"],
-            "thin_or_missing_areas": ["thin1"]
+            "thin_or_missing_areas": ["thin1"],
         },
         "overlooked_factors": [],
         "assumptions": [],
         "conflicts": [],
         "questions": [],
         "safety_flag": False,
-        "guard_notes": []
+        "guard_notes": [],
     }
 
     response = AnalysisResponse(**response_data)
@@ -129,7 +122,7 @@ def test_analysis_response_validation():
         AnalysisResponse(
             session_id="test",
             round=1,
-            decision_restated="Test"
+            decision_restated="Test",
             # Missing reasoning_map which is required
         )
 
@@ -143,14 +136,14 @@ def test_analysis_response_validation():
                 "stated_factors": [],
                 "stated_reasons": [],
                 "most_visible_factors": [],
-                "thin_or_missing_areas": []
+                "thin_or_missing_areas": [],
             },
             overlooked_factors=[],
             assumptions=[],
             conflicts=[],
             questions=[],
             safety_flag="not_a_boolean",  # Should be boolean
-            guard_notes=[]
+            guard_notes=[],
         )
 
 
@@ -164,14 +157,14 @@ def test_empty_lists_are_allowed():
             "stated_factors": [],
             "stated_reasons": [],
             "most_visible_factors": [],
-            "thin_or_missing_areas": []
+            "thin_or_missing_areas": [],
         },
         "overlooked_factors": [],  # Empty list allowed
-        "assumptions": [],         # Empty list allowed
-        "conflicts": [],           # Empty list allowed
-        "questions": [],           # Empty list allowed
+        "assumptions": [],  # Empty list allowed
+        "conflicts": [],  # Empty list allowed
+        "questions": [],  # Empty list allowed
         "safety_flag": False,
-        "guard_notes": []          # Empty list allowed
+        "guard_notes": [],  # Empty list allowed
     }
 
     response = AnalysisResponse(**response_data)
@@ -192,20 +185,20 @@ def test_string_field_stripping():
             "stated_factors": ["  factor1  ", "  factor2  "],
             "stated_reasons": ["  reason1  "],
             "most_visible_factors": ["  visible1  "],
-            "thin_or_missing_areas": ["  thin1  "]
+            "thin_or_missing_areas": ["  thin1  "],
         },
         "overlooked_factors": [
             {
                 "id": "  of1  ",
                 "text": "  Test factor  ",
-                "why_it_matters": "  Test explanation  "
+                "why_it_matters": "  Test explanation  ",
             }
         ],
         "assumptions": [],
         "conflicts": [],
         "questions": [],
         "safety_flag": False,
-        "guard_notes": []
+        "guard_notes": [],
     }
 
     response = AnalysisResponse(**response_data)

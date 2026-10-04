@@ -3,6 +3,7 @@ Health check endpoint
 """
 
 from fastapi import APIRouter
+
 from app.core.config import get_settings
 
 router = APIRouter()
@@ -16,7 +17,7 @@ async def health_check():
         "status": "healthy",
         "service": "Blind Spot AI Thinking Companion",
         "version": "1.0.0",
-        "environment": settings.ENVIRONMENT
+        "environment": settings.ENVIRONMENT,
     }
 
 
@@ -26,5 +27,5 @@ async def root():
     return {
         "message": "Blind Spot AI Thinking Companion API",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
     }

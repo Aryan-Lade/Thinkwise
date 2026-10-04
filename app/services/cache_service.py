@@ -8,8 +8,8 @@ import logging
 from typing import Any, Optional, Tuple
 
 from cachetools import TTLCache
+
 from app.core.config import get_settings
-from app.core.errors import BlindSpotException
 
 logger = logging.getLogger(__name__)
 
@@ -23,20 +23,17 @@ class CacheService:
 
         # Cache for analysis responses
         self.analysis_cache = TTLCache(
-            maxsize=settings.CACHE_MAXSIZE or 100,
-            ttl=settings.CACHE_TTL
+            maxsize=settings.CACHE_MAXSIZE or 100, ttl=settings.CACHE_TTL
         )
 
         # Cache for refine responses
         self.refine_cache = TTLCache(
-            maxsize=settings.CACHE_MAXSIZE or 100,
-            ttl=settings.CACHE_TTL
+            maxsize=settings.CACHE_MAXSIZE or 100, ttl=settings.CACHE_TTL
         )
 
         # General purpose cache
         self.general_cache = TTLCache(
-            maxsize=settings.CACHE_MAXSIZE or 200,
-            ttl=settings.CACHE_TTL
+            maxsize=settings.CACHE_MAXSIZE or 200, ttl=settings.CACHE_TTL
         )
 
         self.settings = settings
@@ -53,10 +50,7 @@ class CacheService:
             MD5 hash of the combined arguments
         """
         # Create a string representation of all arguments
-        key_data = {
-            "prefix": prefix,
-            "args": args
-        }
+        key_data = {"prefix": prefix, "args": args}
 
         # Convert to JSON string for consistent hashing
         key_string = json.dumps(key_data, sort_keys=True)
@@ -69,7 +63,7 @@ class CacheService:
         decision: str,
         details: Optional[str],
         reasons: str,
-        decision_type: Optional[str]
+        decision_type: Optional[str],
     ) -> Optional[Any]:
         """
         Get cached analysis response.
@@ -84,11 +78,7 @@ class CacheService:
             Cached analysis response if found, None otherwise
         """
         cache_key = self._generate_cache_key(
-            "analysis",
-            decision,
-            details or "",
-            reasons,
-            decision_type or ""
+            "analysis", decision, details or "", reasons, decision_type or ""
         )
 
         cached_value = self.analysis_cache.get(cache_key)
@@ -105,7 +95,7 @@ class CacheService:
         details: Optional[str],
         reasons: str,
         decision_type: Optional[str],
-        value: Any
+        value: Any,
     ) -> None:
         """
         Cache an analysis response.
@@ -118,20 +108,14 @@ class CacheService:
             value: Analysis response to cache
         """
         cache_key = self._generate_cache_key(
-            "analysis",
-            decision,
-            details or "",
-            reasons,
-            decision_type or ""
+            "analysis", decision, details or "", reasons, decision_type or ""
         )
 
         self.analysis_cache[cache_key] = value
         logger.debug(f"Cached analysis: {cache_key[:8]}...")
 
     def get_refine(
-        self,
-        session_id: str,
-        answers_tuple: Tuple[Tuple[str, str], ...]
+        self, session_id: str, answers_tuple: Tuple[Tuple[str, str], ...]
     ) -> Optional[Any]:
         """
         Get cached refine response.
@@ -143,11 +127,7 @@ class CacheService:
         Returns:
             Cached refine response if found, None otherwise
         """
-        cache_key = self._generate_cache_key(
-            "refine",
-            session_id,
-            answers_tuple
-        )
+        cache_key = self._generate_cache_key("refine", session_id, answers_tuple)
 
         cached_value = self.refine_cache.get(cache_key)
         if cached_value is not None:
@@ -158,10 +138,7 @@ class CacheService:
         return None
 
     def set_refine(
-        self,
-        session_id: str,
-        answers_tuple: Tuple[Tuple[str, str], ...],
-        value: Any
+        self, session_id: str, answers_tuple: Tuple[Tuple[str, str], ...], value: Any
     ) -> None:
         """
         Cache a refine response.
@@ -171,11 +148,7 @@ class CacheService:
             answers_tuple: Tuple of (question_id, answer) pairs
             value: Refine response to cache
         """
-        cache_key = self._generate_cache_key(
-            "refine",
-            session_id,
-            answers_tuple
-        )
+        cache_key = self._generate_cache_key("refine", session_id, answers_tuple)
 
         self.refine_cache[cache_key] = value
         logger.debug(f"Cached refine: {cache_key[:8]}...")
@@ -234,18 +207,18 @@ class CacheService:
             "analysis_cache": {
                 "size": len(self.analysis_cache),
                 "maxsize": self.analysis_cache.maxsize,
-                "ttl": self.analysis_cache.ttl
+                "ttl": self.analysis_cache.ttl,
             },
             "refine_cache": {
                 "size": len(self.refine_cache),
                 "maxsize": self.refine_cache.maxsize,
-                "ttl": self.refine_cache.ttl
+                "ttl": self.refine_cache.ttl,
             },
             "general_cache": {
                 "size": len(self.general_cache),
                 "maxsize": self.general_cache.maxsize,
-                "ttl": self.general_cache.ttl
-            }
+                "ttl": self.general_cache.ttl,
+            },
         }
 
 
@@ -253,4 +226,3 @@ class CacheService:
 cache_service = CacheService()
 
 # Import constants to avoid circular imports
-from ..core import constants

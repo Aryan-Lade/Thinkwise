@@ -4,7 +4,7 @@ Google Gemini AI service for analysis and refinement
 
 import json
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 from google import genai
 from google.genai import types
@@ -47,11 +47,14 @@ class GeminiService:
             response_mime_type="application/json",
         )
 
-
     def _get_candidate_models(self) -> List[str]:
         """Return list of candidate models with fallbacks."""
         candidates = [self.model]
-        for fallback in ["gemini-flash-lite-latest", "gemini-3.8-flash", "gemini-3.5-flash-lite"]:
+        for fallback in [
+            "gemini-flash-lite-latest",
+            "gemini-3.8-flash",
+            "gemini-3.5-flash-lite",
+        ]:
             if fallback not in candidates:
                 candidates.append(fallback)
         return candidates
@@ -61,7 +64,7 @@ class GeminiService:
         decision: str,
         details: Optional[str] = None,
         reasons: str = "",
-        decision_type: Optional[str] = None
+        decision_type: Optional[str] = None,
     ) -> AnalysisResponse:
         """
         Analyze a decision to identify blind spots.
@@ -82,7 +85,9 @@ class GeminiService:
         for attempt in range(self.max_retries):
             for model_name in candidate_models:
                 try:
-                    logger.info(f"Attempting analysis with model {model_name} (attempt {attempt + 1})")
+                    logger.info(
+                        f"Attempting analysis with model {model_name} (attempt {attempt + 1})"
+                    )
                     response = self.client.models.generate_content(
                         model=model_name,
                         contents=prompt,
@@ -99,15 +104,17 @@ class GeminiService:
 
                 except Exception as e:
                     last_error = e
-                    logger.warning(f"Model {model_name} attempt {attempt + 1} failed: {e}")
+                    logger.warning(
+                        f"Model {model_name} attempt {attempt + 1} failed: {e}"
+                    )
                     # Try next candidate model
 
-        raise GeminiAPIError(f"Failed to generate analysis after {self.max_retries} attempts: {last_error}")
+        raise GeminiAPIError(
+            f"Failed to generate analysis after {self.max_retries} attempts: {last_error}"
+        )
 
     async def refine_analysis(
-        self,
-        session_id: str,
-        answers: List[Dict[str, str]]
+        self, session_id: str, answers: List[Dict[str, str]]
     ) -> RefineResponse:
         """
         Refine analysis based on user answers to questions.
@@ -126,7 +133,9 @@ class GeminiService:
         for attempt in range(self.max_retries):
             for model_name in candidate_models:
                 try:
-                    logger.info(f"Attempting refinement with model {model_name} (attempt {attempt + 1})")
+                    logger.info(
+                        f"Attempting refinement with model {model_name} (attempt {attempt + 1})"
+                    )
                     response = self.client.models.generate_content(
                         model=model_name,
                         contents=prompt,
@@ -143,22 +152,26 @@ class GeminiService:
 
                 except Exception as e:
                     last_error = e
-                    logger.warning(f"Model {model_name} refine attempt {attempt + 1} failed: {e}")
+                    logger.warning(
+                        f"Model {model_name} refine attempt {attempt + 1} failed: {e}"
+                    )
                     # Try next candidate model
 
-        raise GeminiAPIError(f"Failed to refine analysis after {self.max_retries} attempts: {last_error}")
+        raise GeminiAPIError(
+            f"Failed to refine analysis after {self.max_retries} attempts: {last_error}"
+        )
 
     def _build_analysis_prompt(
         self,
         decision: str,
         details: Optional[str],
         reasons: str,
-        decision_type: Optional[str]
+        decision_type: Optional[str],
     ) -> str:
         """Build the analysis prompt for Gemini."""
         from app.prompts import (
-            ANALYSIS_SYSTEM_INSTRUCTION,
             ANALYSIS_FEW_SHOT_EXAMPLES,
+            ANALYSIS_SYSTEM_INSTRUCTION,
             WORKED_EXAMPLE_INTERNSHIP,
         )
 
@@ -177,35 +190,39 @@ class GeminiService:
         if details and details.strip():
             prompt_parts.append(f"Details: {details}")
 
-        prompt_parts.extend([
-            f"Reasons for leaning: {reasons}",
-        ])
+        prompt_parts.extend(
+            [
+                f"Reasons for leaning: {reasons}",
+            ]
+        )
 
         if decision_type:
             prompt_parts.append(f"Decision type: {decision_type}")
 
-        prompt_parts.extend([
-            "",
-            "IMPORTANT: Respond ONLY with valid JSON matching the schema.",
-            "Do not include any explanatory text before or after the JSON.",
-        ])
+        prompt_parts.extend(
+            [
+                "",
+                "IMPORTANT: Respond ONLY with valid JSON matching the schema.",
+                "Do not include any explanatory text before or after the JSON.",
+            ]
+        )
 
         return "\n".join(prompt_parts)
 
     def _build_refine_prompt(
-        self,
-        session_id: str,
-        answers: List[Dict[str, str]]
+        self, session_id: str, answers: List[Dict[str, str]]
     ) -> str:
         """Build the refinement prompt for Gemini."""
         from app.prompts import REFINE_SYSTEM_INSTRUCTION
 
         # Format answers for the prompt
-        answers_text = "\n".join([
-            f"- Question: {answer.get('question_id', 'Unknown')}\n"
-            f"  Answer: {answer.get('answer', 'No answer provided')}"
-            for answer in answers
-        ])
+        answers_text = "\n".join(
+            [
+                f"- Question: {answer.get('question_id', 'Unknown')}\n"
+                f"  Answer: {answer.get('answer', 'No answer provided')}"
+                for answer in answers
+            ]
+        )
 
         prompt_parts = [
             REFINE_SYSTEM_INSTRUCTION,

@@ -2,16 +2,13 @@
 Service for guarding against directive language in AI responses
 """
 
-import re
 import logging
+import re
 from typing import List, Tuple
 
-from app.core.config import get_settings
-from app.core.errors import BlindSpotException
 from app.models.schemas import AnalysisResponse, RefineResponse
 
 # Import constants to avoid circular imports
-from ..core import constants
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +18,6 @@ class GuardService:
 
     def __init__(self):
         """Initialize guard service with directive phrases."""
-        settings = get_settings()
         self.directive_phrases = self._compile_directive_phrases()
         self.max_regenerations = 1  # Only regenerate once as per spec
 
@@ -33,8 +29,8 @@ class GuardService:
             r"i\s+recommend",
             r"the\s+best\s+option\s+is",
             r"go\s+with",
-            r"you\s+must",
-            r"my\s+advice\s+is",
+            r"(?:you|i)\s+must",
+            r"my\s+advi[cs]e\s+is",
             r"choose\s+\w+",
             r"pick\s+\w+",
             r"select\s+\w+",
@@ -49,14 +45,12 @@ class GuardService:
             r"without\s+doubt",
             r"clearly\s+you\s+should",
             r"the\s+right\s+choice\s+is",
-
             # Decision-making language
             r"i\s+think\s+you\s+should",
             r"in\s+my\s+opinion",
             r"based\s+on\s+my\s+analysis",
             r"as\s+an\s+ai\s+advisor",
             r"according\s+to\s+my\s+evaluation",
-
             # Strong suggestions
             r"it\s+would\s+be\s+wise\s+to",
             r"the\s+smarter\s+choice",
@@ -106,40 +100,56 @@ class GuardService:
         sanitized = text
         for match in matches:
             # Replace directive phrases with neutral alternatives
-            # Case-insensitive replacement
             pattern = re.compile(re.escape(match), re.IGNORECASE)
             sanitized = pattern.sub("[guidance removed]", sanitized)
 
         return sanitized
 
     def validate_and_guard_analysis(
-        self,
-        analysis: AnalysisResponse
+        self, analysis: AnalysisResponse
     ) -> AnalysisResponse:
         """
         Validate and guard an analysis response against directive language.
-
-        Args:
-            analysis: Analysis response to validate
-
-        Returns:
-            Potentially modified analysis response
-
-        Raises:
-            BlindSpotException: If directive language persists after guarding
         """
-        # Convert to dict for easier manipulation
         analysis_dict = analysis.model_dump()
-
-        # Check all string fields for directives
         guard_notes = []
 
-        # Fields to check for directive language
         string_fields_to_check = [
             "decision_restated",
             "what_would_change_your_mind",
-            "reversibility_note"
+            "reversibility_note",
         ]
+
+        # Check simple string fields
+        for field in string_fields_to_check:
+            value = analysis_dict.get(field)
+            if value and isinstance(value, str):
+                has_directives, matches = self.check_for_directives(value)
+                if has_directives:
+                    guard_notes.append(
+                        f"Directive language found in {field}: {matches}"
+                    )
+                    analysis_dict[field] = self.sanitize_text(value, matches)
+
+        # Check reasoning map
+        rm = analysis_dict.get("reasoning_map")
+        if isinstance(rm, dict):
+            for rm_field in [
+                "stated_factors",
+                "stated_reasons",
+                "most_visible_factors",
+                "thin_or_missing_areas",
+            ]:
+                factors = rm.get(rm_field, [])
+                if isinstance(factors, list):
+                    for i, factor in enumerate(factors):
+                        if isinstance(factor, str):
+                            has_directives, matches = self.check_for_directives(factor)
+                            if has_directives:
+                                guard_notes.append(
+                                    f"Directive language found in reasoning_map.{rm_field}[{i}]: {matches}"
+                                )
+                                factors[i] = self.sanitize_text(factor, matches)
 
         # Check complex fields
         complex_checks = [
@@ -150,17 +160,6 @@ class GuardService:
             ("possible_biases", ["why_it_may_apply"]),
         ]
 
-        # Check simple string fields
-        for field in string_fields_to_check:
-            value = analysis_dict.get(field)
-            if value and isinstance(value, str):
-                has_directives, matches = self.check_for_directives(value)
-                if has_directives:
-                    guard_notes.append(f"Directive language found in {field}: {matches}")
-                    # Sanitize the field
-                    analysis_dict[field] = self.sanitize_text(value, matches)
-
-        # Check complex fields
         for field_name, subfields in complex_checks:
             items = analysis_dict.get(field_name, [])
             if isinstance(items, list):
@@ -169,59 +168,61 @@ class GuardService:
                         for subfield in subfields:
                             value = item.get(subfield)
                             if value and isinstance(value, str):
-                                has_directives, matches = self.check_for_directives(value)
+                                has_directives, matches = self.check_for_directives(
+                                    value
+                                )
                                 if has_directives:
                                     guard_notes.append(
                                         f"Directive language found in {field_name}[{i}].{subfield}: {matches}"
                                     )
-                                    # Sanitize the field
                                     item[subfield] = self.sanitize_text(value, matches)
 
-        # Update guard_notes in the analysis
         analysis_dict["guard_notes"] = guard_notes
 
-        # Check if we should regenerate (only once)
-        if guard_notes and len(guard_notes) > 0:
+        if guard_notes:
             logger.warning(f"Directive language detected and guarded: {guard_notes}")
-            # In a real implementation, we might regenerate here
-            # For now, we just sanitize and add to guard_notes
 
-        # Return validated analysis
         return AnalysisResponse(**analysis_dict)
 
-    def validate_and_guard_refine(
-        self,
-        refine: RefineResponse
-    ) -> RefineResponse:
+    def validate_and_guard_refine(self, refine: RefineResponse) -> RefineResponse:
         """
         Validate and guard a refine response against directive language.
-
-        Args:
-            refine: Refine response to validate
-
-        Returns:
-            Potentially modified refine response
         """
-        # Similar implementation as above but for RefineResponse
         refine_dict = refine.model_dump()
-
         guard_notes = []
 
-        # Check string fields
-        string_fields_to_check = [
-            "decision_restated",
-            "what_changed"
-        ]
+        string_fields_to_check = ["decision_restated", "what_changed"]
 
         for field in string_fields_to_check:
             value = refine_dict.get(field)
             if value and isinstance(value, str):
                 has_directives, matches = self.check_for_directives(value)
                 if has_directives:
-                    guard_notes.append(f"Directive language found in {field}: {matches}")
+                    guard_notes.append(
+                        f"Directive language found in {field}: {matches}"
+                    )
                     refine_dict[field] = self.sanitize_text(value, matches)
 
-        # Check complex fields
+        # Check reasoning map
+        rm = refine_dict.get("reasoning_map")
+        if isinstance(rm, dict):
+            for rm_field in [
+                "stated_factors",
+                "stated_reasons",
+                "most_visible_factors",
+                "thin_or_missing_areas",
+            ]:
+                factors = rm.get(rm_field, [])
+                if isinstance(factors, list):
+                    for i, factor in enumerate(factors):
+                        if isinstance(factor, str):
+                            has_directives, matches = self.check_for_directives(factor)
+                            if has_directives:
+                                guard_notes.append(
+                                    f"Directive language found in reasoning_map.{rm_field}[{i}]: {matches}"
+                                )
+                                factors[i] = self.sanitize_text(factor, matches)
+
         complex_checks = [
             ("overlooked_factors", ["text", "why_it_matters"]),
             ("assumptions", ["text", "how_to_test"]),
@@ -237,7 +238,9 @@ class GuardService:
                         for subfield in subfields:
                             value = item.get(subfield)
                             if value and isinstance(value, str):
-                                has_directives, matches = self.check_for_directives(value)
+                                has_directives, matches = self.check_for_directives(
+                                    value
+                                )
                                 if has_directives:
                                     guard_notes.append(
                                         f"Directive language found in {field_name}[{i}].{subfield}: {matches}"
@@ -247,7 +250,9 @@ class GuardService:
         refine_dict["guard_notes"] = guard_notes
 
         if guard_notes:
-            logger.warning(f"Directive language detected in refine and guarded: {guard_notes}")
+            logger.warning(
+                f"Directive language detected in refine and guarded: {guard_notes}"
+            )
 
         return RefineResponse(**refine_dict)
 

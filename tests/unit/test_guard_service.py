@@ -11,7 +11,7 @@ def test_guard_service_initialization():
     """Test that GuardService initializes correctly."""
     guard = GuardService()
     assert guard is not None
-    assert hasattr(guard, 'directive_phrases')
+    assert hasattr(guard, "directive_phrases")
     assert len(guard.directive_phrases) > 0
 
 
@@ -30,7 +30,7 @@ def test_check_for_directives_positive():
         "Pick option B for better results.",
         "Select the first choice.",
         "Opt for the safer alternative.",
-        "Decide to take the risk."
+        "Decide to take the risk.",
     ]
 
     for text in test_cases:
@@ -54,7 +54,7 @@ def test_check_for_directives_negative():
         "Explore the possible consequences of each alternative.",
         "Examine whether the stated reasons hold up under scrutiny.",
         "Question whether the assumed benefits are guaranteed.",
-        "Investigate the actual conditions and requirements involved."
+        "Investigate the actual conditions and requirements involved.",
     ]
 
     for text in test_cases:
@@ -73,12 +73,14 @@ def test_check_for_directives_case_insensitive():
         "The BEST OPTION is to proceed.",
         "You Must think about consequences.",
         "mY aDvIsE is to wait.",
-        "cHoOsE the cheaper alternative."
+        "cHoOsE the cheaper alternative.",
     ]
 
     for text in test_cases:
         has_directives, matches = guard.check_for_directives(text)
-        assert has_directives == True, f"Failed to detect directive (case insensitive): {text}"
+        assert (
+            has_directives == True
+        ), f"Failed to detect directive (case insensitive): {text}"
         assert len(matches) > 0, f"No matches found for: {text}"
 
 
@@ -108,13 +110,13 @@ def test_validate_and_guard_analysis():
             "stated_factors": ["good pay"],
             "stated_reasons": ["I recommend this option"],  # Directive!
             "most_visible_factors": ["good pay"],
-            "thin_or_missing_areas": []
+            "thin_or_missing_areas": [],
         },
         "overlooked_factors": [
             {
                 "id": "of1",
                 "text": "You must consider work-life balance",  # Directive!
-                "why_it_matters": "This is important for your health"
+                "why_it_matters": "This is important for your health",
             }
         ],
         "assumptions": [],
@@ -123,11 +125,11 @@ def test_validate_and_guard_analysis():
             {
                 "id": "q1",
                 "theme": "assumptions",
-                "text": "Select the best option for your career"  # Directive!
+                "text": "Select the best option for your career",  # Directive!
             }
         ],
         "safety_flag": False,
-        "guard_notes": []
+        "guard_notes": [],
     }
 
     analysis = AnalysisResponse(**analysis_data)
@@ -141,7 +143,9 @@ def test_validate_and_guard_analysis():
 
     # Check that guard notes were added
     assert len(guarded_analysis.guard_notes) > 0
-    assert any("Directive language found" in note for note in guarded_analysis.guard_notes)
+    assert any(
+        "Directive language found" in note for note in guarded_analysis.guard_notes
+    )
 
 
 def test_validate_and_guard_analysis_clean():
@@ -155,22 +159,25 @@ def test_validate_and_guard_analysis_clean():
         "decision_restated": "Whether to accept the job offer",
         "reasoning_map": {
             "stated_factors": ["good pay", "location", "growth opportunities"],
-            "stated_reasons": ["The compensation is competitive", "The location is convenient"],
+            "stated_reasons": [
+                "The compensation is competitive",
+                "The location is convenient",
+            ],
             "most_visible_factors": ["good pay", "location"],
-            "thin_or_missing_areas": ["work-life balance", "long-term prospects"]
+            "thin_or_missing_areas": ["work-life balance", "long-term prospects"],
         },
         "overlooked_factors": [
             {
                 "id": "of1",
                 "text": "Impact on professional development trajectory",
-                "why_it_matters": "This role may affect future career opportunities"
+                "why_it_matters": "This role may affect future career opportunities",
             }
         ],
         "assumptions": [
             {
                 "id": "a1",
                 "text": "The stated compensation accurately reflects total value",
-                "how_to_test": "Compare total compensation package including benefits and growth potential"
+                "how_to_test": "Compare total compensation package including benefits and growth potential",
             }
         ],
         "conflicts": [
@@ -178,18 +185,18 @@ def test_validate_and_guard_analysis_clean():
                 "id": "c1",
                 "statement_a": "I want to maximize my earning potential",
                 "statement_b": "I'm prioritizing work-life balance in my decision",
-                "tension": "These goals may require different types of roles or industries"
+                "tension": "These goals may require different types of roles or industries",
             }
         ],
         "questions": [
             {
                 "id": "q1",
                 "theme": "assumptions",
-                "text": "What factors contribute to the total compensation package beyond base salary?"
+                "text": "What factors contribute to the total compensation package beyond base salary?",
             }
         ],
         "safety_flag": False,
-        "guard_notes": []
+        "guard_notes": [],
     }
 
     analysis = AnalysisResponse(**analysis_data)
@@ -197,7 +204,10 @@ def test_validate_and_guard_analysis_clean():
 
     # Should be essentially unchanged (except maybe for guard_notes being empty list)
     assert guarded_analysis.decision_restated == analysis.decision_restated
-    assert guarded_analysis.reasoning_map.stated_reasons == analysis.reasoning_map.stated_reasons
+    assert (
+        guarded_analysis.reasoning_map.stated_reasons
+        == analysis.reasoning_map.stated_reasons
+    )
     assert len(guarded_analysis.guard_notes) == 0  # No directives found
 
 
@@ -214,7 +224,7 @@ def test_validate_and_guard_refine():
             "stated_factors": ["factor1"],
             "stated_reasons": ["reason1"],
             "most_visible_factors": ["visible1"],
-            "thin_or_missing_areas": ["thin1"]
+            "thin_or_missing_areas": ["thin1"],
         },
         "overlooked_factors": [],
         "assumptions": [],
@@ -223,12 +233,12 @@ def test_validate_and_guard_refine():
             {
                 "id": "q1",
                 "theme": "assumptions",
-                "text": "Choose the path that leads to success"  # Directive!
+                "text": "Choose the path that leads to success",  # Directive!
             }
         ],
         "what_changed": "I realized I must consider alternative perspectives",  # Directive!
         "safety_flag": False,
-        "guard_notes": []
+        "guard_notes": [],
     }
 
     refine = RefineResponse(**refine_data)

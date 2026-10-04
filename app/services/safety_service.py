@@ -2,12 +2,9 @@
 Safety service for detecting crisis indicators and providing support
 """
 
-import re
 import logging
-from typing import List, Tuple, Optional
-
-from app.core.config import get_settings
-from app.core.errors import BlindSpotException
+import re
+from typing import List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +33,6 @@ class SafetyService:
             r"overdose",
             r"jump\s+off",
             r"hang\s+myself",
-
             # Violence / harm to others
             r"kill\s+them",
             r"hurt\s+someone",
@@ -45,7 +41,6 @@ class SafetyService:
             r"harm\s+others",
             r"revenge",
             r"get\s+back\s+at",
-
             # Extreme distress / hopelessness
             r"can'?t\s+go\s+on",
             r"no\s+point\s+in\s+living",
@@ -53,12 +48,10 @@ class SafetyService:
             r"worthless",
             r"nobody\s+cares",
             r"everyone\s+would\s+be\s+better\s+without\s+me",
-
             # Substance abuse crisis
             r"need\s+more\s+drugs",
             r"can'?t\s+stop\s+drinking",
             r"overdose\s+on\s+pills",
-
             # Abuse situations
             r"being\s+abused",
             r"domestic\s+violence",
@@ -87,13 +80,10 @@ class SafetyService:
                 "While I'm here to help with decision-making, I'm not equipped to provide the kind of support you might need right now. "
                 "Please consider reaching out to someone you trust - a friend, family member, counselor, or other support person. "
                 "You deserve support and care during difficult decisions."
-            )
+            ),
         }
 
-    def check_for_crisis_indicators(
-        self,
-        text: str
-    ) -> Tuple[bool, List[str]]:
+    def check_for_crisis_indicators(self, text: str) -> Tuple[bool, List[str]]:
         """
         Check text for crisis indicators.
 
@@ -125,15 +115,11 @@ class SafetyService:
             Safety response message
         """
         return self.safety_responses.get(
-            crisis_type,
-            self.safety_responses["general_concern"]
+            crisis_type, self.safety_responses["general_concern"]
         )
 
     def validate_input_safety(
-        self,
-        decision: str,
-        details: Optional[str] = None,
-        reasons: str = ""
+        self, decision: str, details: Optional[str] = None, reasons: str = ""
     ) -> Tuple[bool, Optional[str]]:
         """
         Validate user input for safety concerns.
@@ -159,10 +145,7 @@ class SafetyService:
         return True, None
 
     def is_safe_to_proceed(
-        self,
-        decision: str,
-        details: Optional[str] = None,
-        reasons: str = ""
+        self, decision: str, details: Optional[str] = None, reasons: str = ""
     ) -> bool:
         """
         Check if it's safe to proceed with normal analysis.
@@ -183,4 +166,3 @@ class SafetyService:
 safety_service = SafetyService()
 
 # Import constants to avoid circular imports
-from ..core import constants

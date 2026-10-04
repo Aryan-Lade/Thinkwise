@@ -14,10 +14,13 @@ def test_gemini_timeout_simulation(client):
     # For now, we test that the endpoint handles errors gracefully
 
     # Send a request that might trigger internal issues
-    response = client.post("/api/v1/analyze", json={
-        "decision": "Test decision for failure handling",
-        "reasons": "Test reasons"
-    })
+    response = client.post(
+        "/api/v1/analyze",
+        json={
+            "decision": "Test decision for failure handling",
+            "reasons": "Test reasons",
+        },
+    )
 
     # Should either succeed or return a graceful error response
     # Not a 500 with internal details exposed
@@ -29,26 +32,34 @@ def test_gemini_timeout_simulation(client):
 
         # Should not contain stack traces or internal specifics
         internal_indicators = [
-            "traceback", "file", "line", "module", "internal",
-            "gemini", "google", "api", "exception"
+            "traceback",
+            "file",
+            "line",
+            "module",
+            "internal",
+            "gemini",
+            "google",
+            "api",
+            "exception",
         ]
 
         for indicator in internal_indicators:
             # It's okay to mention the service name, but not internal details
             if indicator in ["gemini", "google", "api"]:
                 continue  # Allow mentioning the service
-            assert indicator not in error_str, \
-                f"Error message leaks internal detail: {indicator} in {error_str}"
+            assert (
+                indicator not in error_str
+            ), f"Error message leaks internal detail: {indicator} in {error_str}"
 
 
 def test_invalid_json_from_gemini_simulation(client):
     """Test handling of invalid JSON response from Gemini (simulated)."""
     # Similar to above, we test error handling
 
-    response = client.post("/api/v1/analyze", json={
-        "decision": "Another test decision",
-        "reasons": "More test reasons"
-    })
+    response = client.post(
+        "/api/v1/analyze",
+        json={"decision": "Another test decision", "reasons": "More test reasons"},
+    )
 
     # Should handle gracefully
     if response.status_code >= 500:
@@ -67,10 +78,10 @@ def test_invalid_json_from_gemini_simulation(client):
 def test_empty_gemini_response_simulation(client):
     """Test handling of empty response from Gemini (simulated)."""
 
-    response = client.post("/api/v1/analyze", json={
-        "decision": "Yet another test decision",
-        "reasons": "Still testing"
-    })
+    response = client.post(
+        "/api/v1/analyze",
+        json={"decision": "Yet another test decision", "reasons": "Still testing"},
+    )
 
     # Should handle gracefully
     if response.status_code >= 500:
@@ -85,10 +96,10 @@ def test_empty_gemini_response_simulation(client):
 def test_malformed_gemini_json_simulation(client):
     """Test handling of malformed JSON from Gemini (simulated)."""
 
-    response = client.post("/api/v1/analyze", json={
-        "decision": "Final test decision",
-        "reasons": "Final test reasons"
-    })
+    response = client.post(
+        "/api/v1/analyze",
+        json={"decision": "Final test decision", "reasons": "Final test reasons"},
+    )
 
     # Should handle gracefully
     if response.status_code >= 500:
@@ -103,10 +114,10 @@ def test_malformed_gemini_json_simulation(client):
 def test_database_connection_failure_simulation(client):
     """Test handling of database/session storage failure (simulated)."""
 
-    response = client.post("/api/v1/analyze", json={
-        "decision": "Database test decision",
-        "reasons": "Database test reasons"
-    })
+    response = client.post(
+        "/api/v1/analyze",
+        json={"decision": "Database test decision", "reasons": "Database test reasons"},
+    )
 
     # Should handle gracefully
     if response.status_code >= 500:
@@ -129,10 +140,13 @@ def test_concurrent_requests_handling(client):
 
     def make_request(request_id):
         try:
-            response = client.post("/api/v1/analyze", json={
-                "decision": f"Concurrent test decision {request_id}",
-                "reasons": f"Concurrent test reasons {request_id}"
-            })
+            response = client.post(
+                "/api/v1/analyze",
+                json={
+                    "decision": f"Concurrent test decision {request_id}",
+                    "reasons": f"Concurrent test reasons {request_id}",
+                },
+            )
             results.append((request_id, response.status_code))
         except Exception as e:
             errors.append((request_id, str(e)))
@@ -154,7 +168,9 @@ def test_concurrent_requests_handling(client):
 
     # All should succeed or return graceful errors
     for request_id, status_code in results:
-        assert status_code < 500, f"Request {request_id} returned server error: {status_code}"
+        assert (
+            status_code < 500
+        ), f"Request {request_id} returned server error: {status_code}"
         # Either success (200) or client error (400-range) is acceptable
         assert status_code in [200, 400, 422], f"Unexpected status code: {status_code}"
 
@@ -165,10 +181,13 @@ def test_rapid_sequential_requests(client):
 
     # Make 10 rapid requests
     for i in range(10):
-        response = client.post("/api/v1/analyze", json={
-            "decision": f"Rapid test decision {i}",
-            "reasons": f"Rapid test reasons {i}"
-        })
+        response = client.post(
+            "/api/v1/analyze",
+            json={
+                "decision": f"Rapid test decision {i}",
+                "reasons": f"Rapid test reasons {i}",
+            },
+        )
         status_codes.append(response.status_code)
 
         # Small delay to avoid overwhelming
@@ -180,8 +199,9 @@ def test_rapid_sequential_requests(client):
 
     # Most should succeed or be client errors
     success_or_client_errors = [code for code in status_codes if code < 500]
-    assert len(success_or_client_errors) >= 8, \
-        f"Too many failures in rapid requests: {status_codes}"
+    assert (
+        len(success_or_client_errors) >= 8
+    ), f"Too many failures in rapid requests: {status_codes}"
 
 
 def test_health_check_always_works(client):
@@ -212,21 +232,26 @@ def test_endpoint_availability_under_load(client):
             if method == "GET":
                 response = client.get(endpoint)
             elif method == "POST":
-                response = client.post(endpoint, json={
-                    "decision": f"Load test {i}",
-                    "reasons": f"Load test reasons {i}"
-                })
+                response = client.post(
+                    endpoint,
+                    json={
+                        "decision": f"Load test {i}",
+                        "reasons": f"Load test reasons {i}",
+                    },
+                )
             elif method == "OPTIONS":
                 response = client.options(endpoint)
 
             # Should not get server errors
-            assert response.status_code < 500, \
-                f"Server error on {method} {endpoint} attempt {i}: {response.status_code}"
+            assert (
+                response.status_code < 500
+            ), f"Server error on {method} {endpoint} attempt {i}: {response.status_code}"
 
             # Health and root should always succeed
             if endpoint in ["/health", "/"]:
-                assert response.status_code == 200, \
-                    f"{endpoint} should return 200, got {response.status_code}"
+                assert (
+                    response.status_code == 200
+                ), f"{endpoint} should return 200, got {response.status_code}"
 
 
 def test_graceful_degradation_when_services_unavailable(client):
@@ -240,18 +265,21 @@ def test_graceful_degradation_when_services_unavailable(client):
 
     # Main API endpoint should at least not crash the server
     # (it may return service unavailable or validation errors)
-    api_response = client.post("/api/v1/analyze", json={
-        "decision": "Service test",
-        "reasons": "Service test reasons"
-    })
+    api_response = client.post(
+        "/api/v1/analyze",
+        json={"decision": "Service test", "reasons": "Service test reasons"},
+    )
 
     # Should not be a 500 crash
-    assert api_response.status_code != 500, \
-        "API endpoint caused server crash"
+    assert api_response.status_code != 500, "API endpoint caused server crash"
 
     # Should return either success or a clean error
-    assert api_response.status_code in [200, 400, 422, 503], \
-        f"Unexpected status code: {api_response.status_code}"
+    assert api_response.status_code in [
+        200,
+        400,
+        422,
+        503,
+    ], f"Unexpected status code: {api_response.status_code}"
 
 
 if __name__ == "__main__":

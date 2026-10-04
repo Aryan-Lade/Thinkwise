@@ -2,18 +2,18 @@
 Refine endpoint for updating analysis based on user answers
 """
 
-from fastapi import APIRouter, HTTPException, Request, status
-from fastapi.responses import JSONResponse
 import time
 
-from app.core.config import get_settings
+from fastapi import APIRouter, HTTPException, Request, status
+from fastapi.responses import JSONResponse
+
 from app.core.errors import BlindSpotException, ValidationError
 from app.core.logging import get_logger
+from app.models.schemas import RefineResponse
 from app.services.cache_service import cache_service
 from app.services.gemini_service import gemini_service
 from app.services.guard_service import guard_service
 from app.services.session_service import session_service
-from app.models.schemas import RefineRequest, RefineResponse
 
 router = APIRouter()
 logger = get_logger(__name__)
@@ -72,8 +72,7 @@ async def refine_analysis(request: Request):
         # Check cache for identical request (session_id + answers)
         # Convert answers to tuple of tuples for hashing
         answers_tuple = tuple(
-            (answer["question_id"], answer["answer"])
-            for answer in answers
+            (answer["question_id"], answer["answer"]) for answer in answers
         )
 
         cached_refine = cache_service.get_refine(session_id, answers_tuple)
@@ -83,8 +82,7 @@ async def refine_analysis(request: Request):
 
         # Perform refinement using Gemini service
         refine_result = await gemini_service.refine_analysis(
-            session_id=session_id,
-            answers=answers
+            session_id=session_id, answers=answers
         )
 
         # Apply guardrails to prevent directive language
@@ -100,8 +98,8 @@ async def refine_analysis(request: Request):
                 "type": "refinement",
                 "timestamp": time.time(),
                 "answers": answers,
-                "refinement": refine_result.model_dump()
-            }
+                "refinement": refine_result.model_dump(),
+            },
         )
 
         # Update session with refinement data
@@ -109,33 +107,32 @@ async def refine_analysis(request: Request):
             session_id,
             {
                 "latest_refinement": refine_result.model_dump(),
-                "refinement_count": session_service.get_session(session_id).get("data", {}).get("refinement_count", 0) + 1
+                "refinement_count": session_service.get_session(session_id)
+                .get("data", {})
+                .get("refinement_count", 0)
+                + 1,
             },
-            merge=True
+            merge=True,
         )
 
         process_time = time.time() - start_time
-        logger.info(f"Refinement completed in {process_time:.2f}s for session {session_id}")
+        logger.info(
+            f"Refinement completed in {process_time:.2f}s for session {session_id}"
+        )
 
         return refine_result
 
     except ValidationError as e:
         logger.warning(f"Validation error in refine: {e.message}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=e.message
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
     except BlindSpotException as e:
         logger.error(f"BlindSpot error in refine: {e.message}")
-        raise HTTPException(
-            status_code=e.status_code,
-            detail=e.message
-        )
+        raise HTTPException(status_code=e.status_code, detail=e.message)
     except Exception as e:
         logger.error(f"Unexpected error in refine_analysis: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Internal server error"
+            detail="Internal server error",
         )
 
 
@@ -148,5 +145,5 @@ async def refine_options():
         headers={
             "Access-Control-Allow-Methods": "POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type",
-        }
+        },
     )

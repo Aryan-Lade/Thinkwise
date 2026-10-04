@@ -15,18 +15,20 @@ def test_sql_injection_attempts(client):
         "' OR '1'='1",
         "' UNION SELECT * FROM secrets --",
         "1; DELETE FROM decisions WHERE 1=1; --",
-        "'; EXEC xp_cmdshell('dir'); --"
+        "'; EXEC xp_cmdshell('dir'); --",
     ]
 
     for attempt in injection_attempts:
-        response = client.post("/api/v1/analyze", json={
-            "decision": f"Test decision {attempt}",
-            "reasons": "Test reasons"
-        })
+        response = client.post(
+            "/api/v1/analyze",
+            json={"decision": f"Test decision {attempt}", "reasons": "Test reasons"},
+        )
 
         # Should either succeed (treating as plain text) or return validation error
         # Should NOT return 500 error from SQL execution
-        assert response.status_code != 500, f"SQL injection attempt caused server error: {attempt}"
+        assert (
+            response.status_code != 500
+        ), f"SQL injection attempt caused server error: {attempt}"
 
         if response.status_code == 200:
             # If it succeeded, verify the injection attempt was treated as text
@@ -44,14 +46,14 @@ def test_xss_attempts(client):
         "';alert('xss');//",
         "<svg onload=alert('xss')>",
         "javascript:alert('xss')",
-        "<body onload=alert('xss')>"
+        "<body onload=alert('xss')>",
     ]
 
     for attempt in xss_attempts:
-        response = client.post("/api/v1/analyze", json={
-            "decision": f"Test decision {attempt}",
-            "reasons": "Test reasons"
-        })
+        response = client.post(
+            "/api/v1/analyze",
+            json={"decision": f"Test decision {attempt}", "reasons": "Test reasons"},
+        )
 
         if response.status_code == 200:
             data = response.json()
@@ -73,29 +75,30 @@ def test_request_size_limits(client):
     """Test that oversized requests are rejected."""
     # Test decision too long
     long_decision = "x" * 501  # Assuming MAX_DECISION_LENGTH is 500
-    response = client.post("/api/v1/analyze", json={
-        "decision": long_decision,
-        "reasons": "Test reasons"
-    })
+    response = client.post(
+        "/api/v1/analyze", json={"decision": long_decision, "reasons": "Test reasons"}
+    )
     assert response.status_code == 400
     assert "Decision too long" in response.json()["detail"]
 
     # Test details too long
     long_details = "x" * 2001  # Assuming MAX_DETAILS_LENGTH is 2000
-    response = client.post("/api/v1/analyze", json={
-        "decision": "Test decision",
-        "details": long_details,
-        "reasons": "Test reasons"
-    })
+    response = client.post(
+        "/api/v1/analyze",
+        json={
+            "decision": "Test decision",
+            "details": long_details,
+            "reasons": "Test reasons",
+        },
+    )
     assert response.status_code == 400
     assert "Details too long" in response.json()["detail"]
 
     # Test reasons too long
     long_reasons = "x" * 1001  # Assuming MAX_REASONS_LENGTH is 1000
-    response = client.post("/api/v1/analyze", json={
-        "decision": "Test decision",
-        "reasons": long_reasons
-    })
+    response = client.post(
+        "/api/v1/analyze", json={"decision": "Test decision", "reasons": long_reasons}
+    )
     assert response.status_code == 400
     assert "Reasons too long" in response.json()["detail"]
 
@@ -120,16 +123,19 @@ def test_cors_headers(client):
     response = client.options("/api/v1/analyze")
     # Should not fail (exact behavior depends on CORS configuration)
     # Main thing is that it doesn't crash the server
-    assert response.status_code in [200, 204, 405]  # 405 if OPTIONS not explicitly handled
+    assert response.status_code in [
+        200,
+        204,
+        405,
+    ]  # 405 if OPTIONS not explicitly handled
 
 
 def test_http_method_validation(client):
     """Test that invalid HTTP methods are rejected appropriately."""
     # Test PUT on analyze endpoint (should not be allowed)
-    response = client.put("/api/v1/analyze", json={
-        "decision": "Test",
-        "reasons": "Test"
-    })
+    response = client.put(
+        "/api/v1/analyze", json={"decision": "Test", "reasons": "Test"}
+    )
     # Should be 405 Method Not Allowed or similar
     assert response.status_code in [405, 404, 400]  # Depending on routing
 
@@ -148,7 +154,7 @@ def test_content_type_validation(client):
     response = client.post(
         "/api/v1/analyze",
         data="decision=Test&reasons=Test",
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
     )
     # Should reject or handle gracefully
     # FastAPI with Pydantic should return 422 for invalid JSON
@@ -158,14 +164,15 @@ def test_content_type_validation(client):
 def test_empty_json_body(client):
     """Test handling of empty JSON body."""
     response = client.post(
-        "/api/v1/analyze",
-        json={},
-        headers={"Content-Type": "application/json"}
+        "/api/v1/analyze", json={}, headers={"Content-Type": "application/json"}
     )
     # Should return validation error for missing required fields
     assert response.status_code == 400
     error_detail = response.json()["detail"]
-    assert "Decision is required" in error_detail or "Reasons for leaning are required" in error_detail
+    assert (
+        "Decision is required" in error_detail
+        or "Reasons for leaning are required" in error_detail
+    )
 
 
 def test_malformed_json(client):
@@ -173,7 +180,7 @@ def test_malformed_json(client):
     response = client.post(
         "/api/v1/analyze",
         data="{invalid json:",
-        headers={"Content-Type": "application/json"}
+        headers={"Content-Type": "application/json"},
     )
     # Should return 400 or 422 for invalid JSON
     assert response.status_code in [400, 422]
@@ -187,10 +194,19 @@ def test_health_endpoint_security(client):
     data = response.json()
     # Should not contain sensitive information like API keys, database passwords, etc.
     response_str = str(data).lower()
-    sensitive_terms = ["api_key", "secret", "password", "token", "credential", "private"]
+    sensitive_terms = [
+        "api_key",
+        "secret",
+        "password",
+        "token",
+        "credential",
+        "private",
+    ]
 
     for term in sensitive_terms:
-        assert term not in response_str, f"Health endpoint may expose sensitive term: {term}"
+        assert (
+            term not in response_str
+        ), f"Health endpoint may expose sensitive term: {term}"
 
 
 def test_error_messages_dont_leak_information(client):
@@ -208,7 +224,15 @@ def test_error_messages_dont_leak_information(client):
     error_detail = response.json()["detail"]
     # Should not contain stack traces or internal module names
     error_str = str(error_detail).lower()
-    internal_terms = ["traceback", "file", "line", "module", "internal", "sqlalchemy", "psycopg"]
+    internal_terms = [
+        "traceback",
+        "file",
+        "line",
+        "module",
+        "internal",
+        "sqlalchemy",
+        "psycopg",
+    ]
     for term in internal_terms:
         assert term not in error_str, f"Error message leaks internal detail: {term}"
 
