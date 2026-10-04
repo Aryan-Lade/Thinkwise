@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 import time
 
+from app.core import constants
 from app.core.config import get_settings
 from app.core.errors import BlindSpotException, ValidationError
 from app.core.logging import get_logger
@@ -59,18 +60,17 @@ async def analyze_decision(request: Request):
             raise ValidationError("Reasons for leaning are required")
 
         # Check input length limits
-        settings = get_settings()
-        if len(decision) > settings.MAX_DECISION_LENGTH:
+        if len(decision) > constants.MAX_DECISION_LENGTH:
             raise ValidationError(
-                f"Decision too long. Maximum {settings.MAX_DECISION_LENGTH} characters allowed"
+                f"Decision too long. Maximum {constants.MAX_DECISION_LENGTH} characters allowed"
             )
-        if details and len(details) > settings.MAX_DETAILS_LENGTH:
+        if details and len(details) > constants.MAX_DETAILS_LENGTH:
             raise ValidationError(
-                f"Details too long. Maximum {settings.MAX_DETAILS_LENGTH} characters allowed"
+                f"Details too long. Maximum {constants.MAX_DETAILS_LENGTH} characters allowed"
             )
-        if len(reasons) > settings.MAX_REASONS_LENGTH:
+        if len(reasons) > constants.MAX_REASONS_LENGTH:
             raise ValidationError(
-                f"Reasons too long. Maximum {settings.MAX_REASONS_LENGTH} characters allowed"
+                f"Reasons too long. Maximum {constants.MAX_REASONS_LENGTH} characters allowed"
             )
 
         # Safety check - detect crisis indicators

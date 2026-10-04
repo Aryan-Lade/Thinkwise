@@ -78,7 +78,7 @@ DECISION_TYPES = [
 ]
 
 # Default Values
-DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-flash-lite-latest"
 DEFAULT_CACHE_TTL = 300  # 5 minutes
 DEFAULT_CACHE_MAXSIZE = 100  # Maximum cache entries
 DEFAULT_SESSION_TTL_HOURS = 24  # Session TTL in hours

@@ -3,6 +3,7 @@ Refine endpoint for updating analysis based on user answers
 """
 
 from fastapi import APIRouter, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 import time
 
 from app.core.config import get_settings

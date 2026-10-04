@@ -21,7 +21,8 @@ EXAMPLES OF BAD OUTPUT (directives, advice - AVOID THESE):
 - "The best option is to decline this offer."
 - "You must consider the impact on your academics."
 - "Go with the option that pays more."
-- "My advice is to negotiate for better hours.""""
+- "My advice is to negotiate for better hours."
+"""
 
 # Worked example based on internship scenario
 WORKED_EXAMPLE_INTERNSHIP = """

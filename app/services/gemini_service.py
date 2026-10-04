@@ -30,14 +30,32 @@ class GeminiService:
         self.temperature = settings.GEMINI_TEMPERATURE
         self.max_retries = settings.GEMINI_MAX_RETRIES
 
-        # Configure generation settings
-        self.generate_config = types.GenerateContentConfig(
+        # Configure generation settings with schemas for structured outputs
+        self.analysis_config = types.GenerateContentConfig(
             temperature=self.temperature,
             max_output_tokens=constants.GEMINI_MAX_OUTPUT_TOKENS,
             top_p=constants.GEMINI_TOP_P,
             top_k=constants.GEMINI_TOP_K,
             response_mime_type="application/json",
+            response_schema=AnalysisResponse,
         )
+
+        self.refine_config = types.GenerateContentConfig(
+            temperature=self.temperature,
+            max_output_tokens=constants.GEMINI_MAX_OUTPUT_TOKENS,
+            top_p=constants.GEMINI_TOP_P,
+            top_k=constants.GEMINI_TOP_K,
+            response_mime_type="application/json",
+            response_schema=RefineResponse,
+        )
+
+    def _get_candidate_models(self) -> List[str]:
+        """Return list of candidate models with fallbacks."""
+        candidates = [self.model]
+        for fallback in ["gemini-flash-lite-latest", "gemini-3.8-flash", "gemini-3.5-flash-lite"]:
+            if fallback not in candidates:
+                candidates.append(fallback)
+        return candidates
 
     async def analyze_decision(
         self,
@@ -58,51 +76,34 @@ class GeminiService:
         Returns:
             AnalysisResponse with blind spots analysis
         """
-        try:
-            # Build the prompt
-            prompt = self._build_analysis_prompt(decision, details, reasons, decision_type)
+        prompt = self._build_analysis_prompt(decision, details, reasons, decision_type)
+        candidate_models = self._get_candidate_models()
+        last_error = None
 
-            # Generate content with retries
-            for attempt in range(self.max_retries):
+        for attempt in range(self.max_retries):
+            for model_name in candidate_models:
                 try:
+                    logger.info(f"Attempting analysis with model {model_name} (attempt {attempt + 1})")
                     response = self.client.models.generate_content(
-                        model=self.model,
+                        model=model_name,
                         contents=prompt,
-                        config=self.generate_config,
+                        config=self.analysis_config,
                     )
 
-                    # Parse JSON response
                     if not response.text:
                         raise ValueError("Empty response from Gemini")
 
                     result_dict = json.loads(response.text)
-
-                    # Validate with Pydantic
                     analysis_response = AnalysisResponse(**result_dict)
-
-                    logger.info(f"Successfully analyzed decision (attempt {attempt + 1})")
+                    logger.info(f"Successfully analyzed decision with {model_name}")
                     return analysis_response
 
-                except (json.JSONDecodeError, ValueError) as e:
-                    logger.warning(f"Invalid JSON response from Gemini (attempt {attempt + 1}): {e}")
-                    if attempt == self.max_retries - 1:
-                        raise GeminiAPIError(
-                            f"Failed to parse Gemini response after {self.max_retries} attempts"
-                        )
-                    continue
-
                 except Exception as e:
-                    logger.error(f"Gemini API error (attempt {attempt + 1}): {e}")
-                    if attempt == self.max_retries - 1:
-                        raise GeminiAPIError(f"Gemini API failed: {str(e)}")
-                    continue
+                    last_error = e
+                    logger.warning(f"Model {model_name} attempt {attempt + 1} failed: {e}")
+                    # Try next candidate model
 
-            # Should not reach here
-            raise GeminiAPIError("Unexpected error in Gemini service")
-
-        except Exception as e:
-            logger.error(f"Error in analyze_decision: {e}")
-            raise
+        raise GeminiAPIError(f"Failed to generate analysis after {self.max_retries} attempts: {last_error}")
 
     async def refine_analysis(
         self,
@@ -119,51 +120,34 @@ class GeminiService:
         Returns:
             RefineResponse with updated analysis
         """
-        try:
-            # Build the refinement prompt
-            prompt = self._build_refine_prompt(session_id, answers)
+        prompt = self._build_refine_prompt(session_id, answers)
+        candidate_models = self._get_candidate_models()
+        last_error = None
 
-            # Generate content with retries
-            for attempt in range(self.max_retries):
+        for attempt in range(self.max_retries):
+            for model_name in candidate_models:
                 try:
+                    logger.info(f"Attempting refinement with model {model_name} (attempt {attempt + 1})")
                     response = self.client.models.generate_content(
-                        model=self.model,
+                        model=model_name,
                         contents=prompt,
-                        config=self.generate_config,
+                        config=self.refine_config,
                     )
 
-                    # Parse JSON response
                     if not response.text:
                         raise ValueError("Empty response from Gemini")
 
                     result_dict = json.loads(response.text)
-
-                    # Validate with Pydantic
                     refine_response = RefineResponse(**result_dict)
-
-                    logger.info(f"Successfully refined analysis (attempt {attempt + 1})")
+                    logger.info(f"Successfully refined analysis with {model_name}")
                     return refine_response
 
-                except (json.JSONDecodeError, ValueError) as e:
-                    logger.warning(f"Invalid JSON response from Gemini (attempt {attempt + 1}): {e}")
-                    if attempt == self.max_retries - 1:
-                        raise GeminiAPIError(
-                            f"Failed to parse Gemini response after {self.max_retries} attempts"
-                        )
-                    continue
-
                 except Exception as e:
-                    logger.error(f"Gemini API error (attempt {attempt + 1}): {e}")
-                    if attempt == self.max_retries - 1:
-                        raise GeminiAPIError(f"Gemini API failed: {str(e)}")
-                    continue
+                    last_error = e
+                    logger.warning(f"Model {model_name} refine attempt {attempt + 1} failed: {e}")
+                    # Try next candidate model
 
-            # Should not reach here
-            raise GeminiAPIError("Unexpected error in Gemini service")
-
-        except Exception as e:
-            logger.error(f"Error in refine_analysis: {e}")
-            raise
+        raise GeminiAPIError(f"Failed to refine analysis after {self.max_retries} attempts: {last_error}")
 
     def _build_analysis_prompt(
         self,
@@ -173,10 +157,19 @@ class GeminiService:
         decision_type: Optional[str]
     ) -> str:
         """Build the analysis prompt for Gemini."""
-        from app.prompts import ANALYSIS_SYSTEM_INSTRUCTION, ANALYSIS_FEW_SHOT_EXAMPLES
+        from app.prompts import (
+            ANALYSIS_SYSTEM_INSTRUCTION,
+            ANALYSIS_FEW_SHOT_EXAMPLES,
+            WORKED_EXAMPLE_INTERNSHIP,
+        )
 
         prompt_parts = [
             ANALYSIS_SYSTEM_INSTRUCTION,
+            "",
+            "REFERENCE WORKED EXAMPLE:",
+            WORKED_EXAMPLE_INTERNSHIP,
+            "",
+            ANALYSIS_FEW_SHOT_EXAMPLES,
             "",
             "ANALYSIS REQUEST:",
             f"Decision: {decision}",
@@ -194,8 +187,6 @@ class GeminiService:
 
         prompt_parts.extend([
             "",
-            ANALYSIS_FEW_SHOT_EXAMPLES,
-            "",
             "IMPORTANT: Respond ONLY with valid JSON matching the schema.",
             "Do not include any explanatory text before or after the JSON.",
         ])
@@ -212,7 +203,7 @@ class GeminiService:
 
         # Format answers for the prompt
         answers_text = "\n".join([
-            f"- Question: {answer.get('question_id', 'Unknown')}"
+            f"- Question: {answer.get('question_id', 'Unknown')}\n"
             f"  Answer: {answer.get('answer', 'No answer provided')}"
             for answer in answers
         ])
@@ -225,9 +216,6 @@ class GeminiService:
             "",
             "User's answers to previous questions:",
             answers_text,
-            "",
-            "",
-            REFINE_SYSTEM_INSTRUCTION,
             "",
             "IMPORTANT: Respond ONLY with valid JSON matching the schema.",
             "Do not include any explanatory text before or after the JSON.",

@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     SESSION_TTL_HOURS: int = Field(default=24, description="Session TTL in hours")
 
     # Gemini Configuration
-    GEMINI_MODEL: str = Field(default="gemini-1.5-flash", description="Gemini model to use")
+    GEMINI_MODEL: str = Field(default="gemini-flash-lite-latest", description="Gemini model to use")
     GEMINI_TEMPERATURE: float = Field(default=0.7, description="Gemini temperature")
     GEMINI_MAX_RETRIES: int = Field(default=3, description="Max retries for Gemini API")
 

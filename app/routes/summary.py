@@ -3,6 +3,7 @@ Summary endpoint for generating thinking summary
 """
 
 from fastapi import APIRouter, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 import time
 from datetime import datetime
 
@@ -81,7 +82,7 @@ async def generate_summary(request: Request):
             raise ValidationError("No analysis found in session")
 
         # Generate thinking summary
-        thinking_summary = self._generate_thinking_summary(
+        thinking_summary = _generate_thinking_summary(
             latest_analysis=latest_analysis,
             latest_refinement=latest_refinement,
             user_answers=user_answers,
@@ -285,19 +286,20 @@ def _generate_thinking_summary(
             summary_parts.append(f"### {question.theme.title()}: {question.text}")
             summary_parts.append("")
 
-    # Additional insights from refinement
-    if latest_refinement:
-        if latest_refinement.what_would_change_your_mind:
-            summary_parts.append("## What Would Change Your Mind?")
-            summary_parts.append("")
-            summary_parts.append(latest_refinement.what_would_change_your_mind)
-            summary_parts.append("")
+    # Additional insights
+    mind_change = getattr(latest_refinement, "what_would_change_your_mind", None) or getattr(latest_analysis, "what_would_change_your_mind", None)
+    if mind_change:
+        summary_parts.append("## What Would Change Your Mind?")
+        summary_parts.append("")
+        summary_parts.append(mind_change)
+        summary_parts.append("")
 
-        if latest_refinement.reversibility_note:
-            summary_parts.append("## Thoughts on Reversibility")
-            summary_parts.append("")
-            summary_parts.append(latest_refinement.reversibility_note)
-            summary_parts.append("")
+    rev_note = getattr(latest_refinement, "reversibility_note", None) or getattr(latest_analysis, "reversibility_note", None)
+    if rev_note:
+        summary_parts.append("## Thoughts on Reversibility")
+        summary_parts.append("")
+        summary_parts.append(rev_note)
+        summary_parts.append("")
 
     # Possible biases (tentative)
     if latest_analysis.possible_biases:
