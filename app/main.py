@@ -44,11 +44,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routes
-app.include_router(health.router, prefix="/api/v1", tags=["health"])
-app.include_router(analyze.router, prefix="/api/v1", tags=["analyze"])
-app.include_router(refine.router, prefix="/api/v1", tags=["refine"])
-app.include_router(summary.router, prefix="/api/v1", tags=["summary"])
+# Normalize Vercel paths middleware
+@app.middleware("http")
+async def normalize_vercel_paths(request: Request, call_next):
+    """Normalize paths that may be altered by Vercel serverless rewrites."""
+    path = request.scope.get("path", "")
+    for prefix in ["/api/index.py", "/index.py"]:
+        if path.startswith(prefix):
+            new_path = path[len(prefix):] or "/"
+            request.scope["path"] = new_path
+            break
+    return await call_next(request)
+
+# Include API routes for both /api/v1 and /v1 (covers direct and rewritten Vercel requests)
+for prefix in ["/api/v1", "/v1"]:
+    app.include_router(health.router, prefix=prefix, tags=["health"])
+    app.include_router(analyze.router, prefix=prefix, tags=["analyze"])
+    app.include_router(refine.router, prefix=prefix, tags=["refine"])
+    app.include_router(summary.router, prefix=prefix, tags=["summary"])
+
+# Direct health endpoints
+@app.get("/health")
+@app.get("/api/health")
+async def direct_health():
+    return {"status": "healthy", "service": "Thinkwise", "version": "1.0.0"}
 
 # Mount static assets if directories exist
 if (STATIC_DIR / "assets").exists():
@@ -75,10 +94,12 @@ async def icons():
         return FileResponse(str(ico), media_type="image/svg+xml")
     return {"error": "icons not found"}
 
-# Catch-all: serve exact file if it exists, otherwise serve index.html
+# Catch-all: serve exact file if it exists, otherwise serve index.html (never for API paths)
 @app.get("/{full_path:path}")
 async def serve_spa(full_path: str, request: Request):
     """Serve static file or fallback to index.html."""
+    if full_path.startswith("api/") or full_path.startswith("v1/"):
+        return {"error": "API route not found", "requested_path": full_path}
     target_file = STATIC_DIR / full_path
     if target_file.is_file():
         return FileResponse(str(target_file))
@@ -86,6 +107,7 @@ async def serve_spa(full_path: str, request: Request):
     if index_path.exists():
         return FileResponse(str(index_path))
     return {"error": "Frontend not found"}
+
 
 
 @app.on_event("startup")
