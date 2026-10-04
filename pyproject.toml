@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "blind-spot"
 version = "1.0.0"
 description = "AI-powered thinking companion to identify blind spots in decision-making"
+requires-python = ">=3.10"
 authors = [{name = "Aryan Lade", email = "aryan.lade@example.com"}]
 dependencies = [
     "fastapi==0.104.1",
@@ -17,6 +18,12 @@ dependencies = [
     "cachetools==5.3.0",
     "google-cloud-logging==3.4.0"
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+exclude = ["tests*", "static*", "api*"]
+
 
 [project.optional-dependencies]
 dev = [
